@@ -80,3 +80,15 @@ class GenerateRequest(BaseModel):
     genre: str
     premise: str
     num_scenes: int = 5
+
+
+class StoryboardGenerateRequest(BaseModel):
+    """Request for full storyboard generation.
+
+    Provide either script_text (parse existing) or genre + premise (AI generate).
+    """
+    script_text: str | None = None
+    genre: str | None = None
+    premise: str | None = None
+    num_scenes: int = 5
+    title: str = "Untitled Project"

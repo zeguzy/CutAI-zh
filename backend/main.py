@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from config import ALLOWED_ORIGINS, GENERATED_FRAMES_DIR
 from models.database import init_db
+from routers import storyboard
 
 
 @asynccontextmanager
@@ -38,6 +39,10 @@ os.makedirs(GENERATED_FRAMES_DIR, exist_ok=True)
 
 # Serve generated images as static files
 app.mount("/generated", StaticFiles(directory="generated"), name="generated")
+
+
+# Routers
+app.include_router(storyboard.router)
 
 
 @app.get("/health")
