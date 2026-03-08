@@ -11,10 +11,13 @@ import asyncio
 import json
 import traceback
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from models.database import async_session
+from models.database import async_session, get_session
 from models.db_models import Project, Script as ScriptDB, Scene as SceneDB, Shot as ShotDB
 from models.schemas import StoryboardGenerateRequest
 from services.vram_manager import vram_manager
@@ -263,3 +266,89 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
             await unload_sd_pipeline()
         except Exception:
             pass
+
+
+# ===================================================================
+# Export endpoint
+# ===================================================================
+
+@router.get("/{project_id}/export")
+async def export_storyboard(
+    project_id: int,
+    session: AsyncSession = Depends(get_session),
+):
+    """Return the complete storyboard as JSON for a project."""
+    result = await session.execute(
+        select(Project)
+        .where(Project.id == project_id)
+        .options(
+            selectinload(Project.scripts)
+            .selectinload(ScriptDB.scenes)
+            .selectinload(SceneDB.shots)
+        )
+    )
+    project = result.scalar_one_or_none()
+    if not project:
+        raise HTTPException(404, "Project not found")
+
+    return {
+        "project": {
+            "id": project.id,
+            "title": project.title,
+            "genre": project.genre,
+            "created_at": project.created_at.isoformat() if project.created_at else "",
+            "updated_at": project.updated_at.isoformat() if project.updated_at else "",
+        },
+        "scripts": [
+            {
+                "id": script.id,
+                "title": script.title,
+                "genre": script.genre,
+                "logline": script.logline,
+                "raw_text": script.raw_text,
+                "total_duration_seconds": script.total_duration_seconds,
+                "scenes": [
+                    {
+                        "id": scene.id,
+                        "scene_number": scene.scene_number,
+                        "title": scene.title,
+                        "location": scene.location,
+                        "time_of_day": scene.time_of_day,
+                        "description": scene.description,
+                        "characters": scene.characters or [],
+                        "mood": {
+                            "tension": scene.mood_tension,
+                            "emotion": scene.mood_emotion,
+                            "energy": scene.mood_energy,
+                            "darkness": scene.mood_darkness,
+                            "overall_mood": scene.mood_overall or "neutral",
+                        },
+                        "soundtrack": {
+                            "genre": scene.soundtrack_genre or "",
+                            "tempo": scene.soundtrack_tempo or "moderate",
+                            "instruments": scene.soundtrack_instruments or [],
+                            "reference_track": scene.soundtrack_reference or "",
+                            "energy_level": scene.soundtrack_energy,
+                        },
+                        "frame_image_path": scene.frame_image_path,
+                        "shots": [
+                            {
+                                "id": shot.id,
+                                "shot_number": shot.shot_number,
+                                "shot_type": shot.shot_type,
+                                "camera_angle": shot.camera_angle,
+                                "camera_movement": shot.camera_movement,
+                                "description": shot.description,
+                                "dialogue": shot.dialogue,
+                                "duration_seconds": shot.duration_seconds,
+                                "sd_prompt": shot.sd_prompt,
+                            }
+                            for shot in scene.shots
+                        ],
+                    }
+                    for scene in script.scenes
+                ],
+            }
+            for script in project.scripts
+        ],
+    }

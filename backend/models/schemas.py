@@ -92,3 +92,83 @@ class StoryboardGenerateRequest(BaseModel):
     premise: str | None = None
     num_scenes: int = 5
     title: str = "Untitled Project"
+
+
+class ScriptUpdate(BaseModel):
+    title: str | None = None
+    genre: str | None = None
+    logline: str | None = None
+    raw_text: str | None = None
+
+
+class SceneUpdate(BaseModel):
+    title: str | None = None
+    location: str | None = None
+    time_of_day: str | None = None
+    description: str | None = None
+    characters: list[str] | None = None
+
+
+class SceneReorder(BaseModel):
+    """List of scene IDs in the desired order."""
+    scene_ids: list[int]
+
+
+# --- Full response models for export ---
+
+class ShotResponse(BaseModel):
+    id: int
+    shot_number: int
+    shot_type: str
+    camera_angle: str
+    camera_movement: str
+    description: str | None
+    dialogue: str | None
+    duration_seconds: int
+    sd_prompt: str | None
+
+    class Config:
+        from_attributes = True
+
+
+class SceneResponse(BaseModel):
+    id: int
+    scene_number: int
+    title: str
+    location: str | None
+    time_of_day: str | None
+    description: str | None
+    characters: list
+    mood: MoodScore | None = None
+    soundtrack: SoundtrackVibe | None = None
+    frame_image_path: str | None
+    shots: list[ShotResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
+class ScriptResponse(BaseModel):
+    id: int
+    title: str
+    genre: str | None
+    logline: str | None
+    raw_text: str | None
+    total_duration_seconds: int
+    created_at: str
+    scenes: list[SceneResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
+class ProjectDetailResponse(BaseModel):
+    id: int
+    title: str
+    genre: str | None
+    created_at: str
+    updated_at: str
+    scripts: list[ScriptResponse] = []
+
+    class Config:
+        from_attributes = True

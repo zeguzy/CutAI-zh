@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 from config import ALLOWED_ORIGINS, GENERATED_FRAMES_DIR
 from models.database import init_db
-from routers import storyboard
+from routers import projects, scripts, scenes, storyboard
 
 
 @asynccontextmanager
@@ -42,6 +42,9 @@ app.mount("/generated", StaticFiles(directory="generated"), name="generated")
 
 
 # Routers
+app.include_router(projects.router)
+app.include_router(scripts.router)
+app.include_router(scenes.router)
 app.include_router(storyboard.router)
 
 
