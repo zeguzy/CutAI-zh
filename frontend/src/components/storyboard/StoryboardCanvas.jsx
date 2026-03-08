@@ -15,9 +15,11 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { AnimatePresence } from 'framer-motion'
 import { LayoutGrid } from 'lucide-react'
 import useStoryboardStore from '../../stores/useStoryboardStore'
 import SceneCard from './SceneCard'
+import ShotPanel from './ShotPanel'
 
 // Wrapper that connects each SceneCard to dnd-kit's sortable system
 function SortableSceneCard({ scene, isSelected, onSelect }) {
@@ -76,7 +78,6 @@ export default function StoryboardCanvas() {
         scene_number: i + 1,
       }))
 
-      // Find the script_id from the first scene (all scenes share the same script)
       const scriptId = scenes[0]?.script_id
       if (scriptId) {
         useStoryboardStore.getState().reorderScenes(scriptId, reordered)
@@ -86,6 +87,8 @@ export default function StoryboardCanvas() {
     },
     [scenes, setScenes],
   )
+
+  const selectedScene = scenes.find((s) => s.id === selectedSceneId) || null
 
   // Empty state
   if (!loading && scenes.length === 0) {
@@ -116,26 +119,38 @@ export default function StoryboardCanvas() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={scenes.map((s) => s.id)}
-        strategy={rectSortingStrategy}
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {scenes.map((scene) => (
-            <SortableSceneCard
-              key={scene.id}
-              scene={scene}
-              isSelected={selectedSceneId === scene.id}
-              onSelect={selectScene}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={scenes.map((s) => s.id)}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {scenes.map((scene) => (
+              <SortableSceneCard
+                key={scene.id}
+                scene={scene}
+                isSelected={selectedSceneId === scene.id}
+                onSelect={selectScene}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {/* Shot detail panel — slides in from right */}
+      <AnimatePresence>
+        {selectedScene && (
+          <ShotPanel
+            scene={selectedScene}
+            onClose={() => selectScene(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   )
 }
