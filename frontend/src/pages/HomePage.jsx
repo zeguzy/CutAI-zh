@@ -2,53 +2,37 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Plus, Film, Folder, Trash2, Clock } from 'lucide-react'
-import api from '../services/api'
+import useProjectStore from '../stores/useProjectStore'
 
 export default function HomePage() {
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { projects, loading, fetchProjects, createProject, deleteProject } = useProjectStore()
   const [showNew, setShowNew] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newGenre, setNewGenre] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    loadProjects()
+    fetchProjects()
   }, [])
 
-  async function loadProjects() {
-    try {
-      const { data } = await api.get('/api/projects')
-      setProjects(data)
-    } catch {
-      // Backend not running — empty list
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function createProject(e) {
+  async function handleCreate(e) {
     e.preventDefault()
     if (!newTitle.trim()) return
     try {
-      const { data } = await api.post('/api/projects', {
-        title: newTitle.trim(),
-        genre: newGenre.trim() || null,
-      })
+      const project = await createProject(newTitle.trim(), newGenre.trim())
       setShowNew(false)
       setNewTitle('')
       setNewGenre('')
-      navigate(`/project/${data.id}`)
+      navigate(`/project/${project.id}`)
     } catch {
       // handle error
     }
   }
 
-  async function deleteProject(id, e) {
+  async function handleDelete(id, e) {
     e.stopPropagation()
     if (!confirm('Delete this project and all its data?')) return
-    await api.delete(`/api/projects/${id}`)
-    setProjects((p) => p.filter((proj) => proj.id !== id))
+    await deleteProject(id)
   }
 
   return (
@@ -93,7 +77,7 @@ export default function HomePage() {
         <motion.form
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          onSubmit={createProject}
+          onSubmit={handleCreate}
           className="bg-surface-800 border border-surface-700 rounded-xl p-5 w-full max-w-md mb-10"
         >
           <h3 className="text-sm font-semibold text-zinc-300 mb-4">New Project</h3>
@@ -154,7 +138,7 @@ export default function HomePage() {
                   <Film className="w-4 h-4 text-surface-400 group-hover:text-accent-400 transition-colors" />
                 </div>
                 <button
-                  onClick={(e) => deleteProject(project.id, e)}
+                  onClick={(e) => handleDelete(project.id, e)}
                   className="w-7 h-7 rounded flex items-center justify-center text-surface-600 hover:text-film-red hover:bg-film-red/10 transition-all opacity-0 group-hover:opacity-100"
                   title="Delete project"
                 >

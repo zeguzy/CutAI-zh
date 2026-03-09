@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { FileText, LayoutGrid, Clock, BarChart3 } from 'lucide-react'
-import api from '../services/api'
-import { API_URL } from '../utils/constants'
+import useProjectStore from '../stores/useProjectStore'
+import useUIStore from '../stores/useUIStore'
 import ScriptEditor from '../components/script/ScriptEditor'
 import ScriptGenerator from '../components/script/ScriptGenerator'
 import GenerationProgress from '../components/script/GenerationProgress'
@@ -15,95 +13,34 @@ const TABS = {
   analysis: { label: 'Analysis', icon: BarChart3 },
 }
 
-export default function ProjectPage({ activeTab, onProjectLoad }) {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [project, setProject] = useState(null)
+export default function ProjectPage() {
+  const currentProject = useProjectStore((s) => s.currentProject)
 
-  // Script tab state
-  const [scriptText, setScriptText] = useState('')
-  const [mode, setMode] = useState('write') // 'write' | 'generate'
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [sseEvents, setSseEvents] = useState([])
-  const [genError, setGenError] = useState(null)
-  const [genResult, setGenResult] = useState(null)
+  const activeTab = useUIStore((s) => s.activeTab)
+  const scriptMode = useUIStore((s) => s.scriptMode)
+  const scriptText = useUIStore((s) => s.scriptText)
+  const isGenerating = useUIStore((s) => s.isGenerating)
+  const sseEvents = useUIStore((s) => s.sseEvents)
+  const genError = useUIStore((s) => s.genError)
+  const genResult = useUIStore((s) => s.genResult)
+  const setScriptMode = useUIStore((s) => s.setScriptMode)
+  const setScriptText = useUIStore((s) => s.setScriptText)
+  const startGeneration = useUIStore((s) => s.startGeneration)
 
-  useEffect(() => {
-    api.get(`/api/projects/${id}`)
-      .then(({ data }) => {
-        setProject(data)
-        if (onProjectLoad) onProjectLoad(data)
-      })
-      .catch(() => {})
-  }, [id])
-
-  // SSE consumer for storyboard generation
-  const startGeneration = useCallback(async (payload) => {
-    setIsGenerating(true)
-    setSseEvents([])
-    setGenError(null)
-    setGenResult(null)
-
-    try {
-      const response = await fetch(`${API_URL}/api/storyboard/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        // Keep the last incomplete line in the buffer
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const event = JSON.parse(line.slice(6))
-            if (event.type === 'progress') {
-              setSseEvents((prev) => [...prev, event])
-            } else if (event.type === 'complete') {
-              setSseEvents((prev) => [...prev, { stage: 'complete', message: event.message, progress: 100 }])
-              setGenResult(event.data)
-            } else if (event.type === 'error') {
-              setGenError(event.message)
-            }
-          } catch {
-            // skip malformed SSE lines
-          }
-        }
-      }
-    } catch (err) {
-      setGenError(err.message || 'Connection failed')
-    } finally {
-      setIsGenerating(false)
-    }
-  }, [])
-
-  // Handle "Generate Script" from the AI generator panel
   function handleAIGenerate({ genre, premise, numScenes }) {
     startGeneration({
       genre,
       premise,
       num_scenes: numScenes,
-      title: project?.title || 'Untitled Project',
+      title: currentProject?.title || 'Untitled Project',
     })
   }
 
-  // Handle "Generate from Script" — user has written their own script
   function handleScriptSubmit() {
     if (!scriptText.trim()) return
     startGeneration({
       script_text: scriptText.trim(),
-      title: project?.title || 'Untitled Project',
+      title: currentProject?.title || 'Untitled Project',
     })
   }
 
@@ -129,9 +66,9 @@ export default function ProjectPage({ activeTab, onProjectLoad }) {
             {/* Mode toggle */}
             <div className="flex items-center gap-1 bg-surface-850 border border-surface-700 rounded-lg p-1 w-fit">
               <button
-                onClick={() => setMode('write')}
+                onClick={() => setScriptMode('write')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  mode === 'write'
+                  scriptMode === 'write'
                     ? 'bg-surface-700 text-zinc-200'
                     : 'text-surface-400 hover:text-zinc-300'
                 }`}
@@ -139,9 +76,9 @@ export default function ProjectPage({ activeTab, onProjectLoad }) {
                 Write Script
               </button>
               <button
-                onClick={() => setMode('generate')}
+                onClick={() => setScriptMode('generate')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  mode === 'generate'
+                  scriptMode === 'generate'
                     ? 'bg-surface-700 text-zinc-200'
                     : 'text-surface-400 hover:text-zinc-300'
                 }`}
@@ -150,8 +87,8 @@ export default function ProjectPage({ activeTab, onProjectLoad }) {
               </button>
             </div>
 
-            {/* Write mode — script editor + submit button */}
-            {mode === 'write' && (
+            {/* Write mode */}
+            {scriptMode === 'write' && (
               <>
                 <ScriptEditor
                   value={scriptText}
@@ -177,15 +114,15 @@ export default function ProjectPage({ activeTab, onProjectLoad }) {
               </>
             )}
 
-            {/* Generate mode — AI generator panel */}
-            {mode === 'generate' && (
+            {/* Generate mode */}
+            {scriptMode === 'generate' && (
               <ScriptGenerator
                 onGenerate={handleAIGenerate}
                 disabled={isGenerating}
               />
             )}
 
-            {/* Progress indicator — shown during generation */}
+            {/* Progress indicator */}
             {(isGenerating || sseEvents.length > 0) && (
               <GenerationProgress
                 events={sseEvents}

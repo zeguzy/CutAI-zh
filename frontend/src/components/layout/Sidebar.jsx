@@ -6,6 +6,7 @@ import {
   BarChart3,
   Home,
 } from 'lucide-react'
+import useUIStore from '../../stores/useUIStore'
 
 const NAV_ITEMS = [
   { id: 'script', label: 'Script', icon: FileText },
@@ -14,9 +15,11 @@ const NAV_ITEMS = [
   { id: 'analysis', label: 'Analysis', icon: BarChart3 },
 ]
 
-export default function Sidebar({ activeTab, onTabChange }) {
+export default function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
+  const activeTab = useUIStore((s) => s.activeTab)
+  const setActiveTab = useUIStore((s) => s.setActiveTab)
   const isProjectView = location.pathname.startsWith('/project/')
 
   return (
@@ -36,13 +39,13 @@ export default function Sidebar({ activeTab, onTabChange }) {
       {/* Nav items — only active when inside a project */}
       <nav className="flex flex-col items-center gap-1">
         {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
-          const isActive = activeTab === id
+          const isActive = isProjectView && activeTab === id
           const disabled = !isProjectView
 
           return (
             <button
               key={id}
-              onClick={() => !disabled && onTabChange(id)}
+              onClick={() => !disabled && setActiveTab(id)}
               disabled={disabled}
               title={label}
               className={`

@@ -1,7 +1,11 @@
 import { Film, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import useProjectStore from '../../stores/useProjectStore'
 
-export default function Header({ projectTitle }) {
+export default function Header() {
+  const currentProject = useProjectStore((s) => s.currentProject)
+  const projectTitle = currentProject?.title || null
+
   return (
     <header className="h-12 bg-surface-850 border-b border-surface-700 flex items-center px-4 shrink-0 z-50 relative">
       {/* Logo */}
