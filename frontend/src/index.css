@@ -101,3 +101,28 @@ body::before {
   font-family: var(--font-mono);
   letter-spacing: -0.01em;
 }
+
+/* React Flow — dark theme overrides */
+.cutai-timeline .react-flow__pane {
+  cursor: grab;
+}
+
+.cutai-timeline .react-flow__node {
+  cursor: pointer;
+}
+
+.cutai-timeline .react-flow__controls button {
+  fill: #52526a;
+}
+
+.cutai-timeline .react-flow__controls button:hover {
+  fill: #e4e4e7;
+}
+
+.cutai-timeline .react-flow__edge-path {
+  stroke: #242430;
+}
+
+.cutai-timeline .react-flow__minimap {
+  background: var(--color-surface-850);
+}

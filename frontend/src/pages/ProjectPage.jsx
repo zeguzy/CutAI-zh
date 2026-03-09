@@ -5,6 +5,9 @@ import ScriptEditor from '../components/script/ScriptEditor'
 import ScriptGenerator from '../components/script/ScriptGenerator'
 import GenerationProgress from '../components/script/GenerationProgress'
 import StoryboardCanvas from '../components/storyboard/StoryboardCanvas'
+import VisualTimeline from '../components/timeline/VisualTimeline'
+import MoodGraph from '../components/analysis/MoodGraph'
+import SoundtrackPanel from '../components/analysis/SoundtrackPanel'
 
 const TABS = {
   script: { label: 'Script', icon: FileText },
@@ -178,19 +181,12 @@ export default function ProjectPage() {
           <StoryboardCanvas />
         )}
         {activeTab === 'timeline' && (
-          <div className="text-center py-20">
-            <Clock className="w-10 h-10 text-surface-600 mx-auto mb-3" />
-            <p className="text-sm text-surface-400 font-mono">
-              Visual timeline will be built in Step 14
-            </p>
-          </div>
+          <VisualTimeline />
         )}
         {activeTab === 'analysis' && (
-          <div className="text-center py-20">
-            <BarChart3 className="w-10 h-10 text-surface-600 mx-auto mb-3" />
-            <p className="text-sm text-surface-400 font-mono">
-              Mood graph & analysis will be built in Step 15
-            </p>
+          <div className="space-y-6">
+            <MoodGraph />
+            <SoundtrackPanel />
           </div>
         )}
       </div>
