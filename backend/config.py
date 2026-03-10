@@ -19,7 +19,7 @@ IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "local")     # "local" (SD 1.5) or 
 
 # Ollama / LLM (local)
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5:7b")
+LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5:3b")
 LLM_NUM_CTX = int(os.getenv("LLM_NUM_CTX", "4096"))
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 

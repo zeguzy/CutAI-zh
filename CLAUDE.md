@@ -15,11 +15,11 @@
 - **RAM:** 8GB DDR4  
 - **OS:** Windows (dev machine)  
 - **VRAM Rule:** LLM and Image Generation NEVER run simultaneously. Sequential pipeline only.  
-  - Load Qwen 2.5 7B → generate ALL scene data → unload → load Stable Diffusion → generate ALL frames → unload  
-- **LLM:** `qwen2.5:7b` via Ollama (~4.7GB VRAM, q4_K_M)  
+  - Load Qwen 2.5 3B → generate ALL scene data → unload → load Stable Diffusion → generate ALL frames → unload  
+- **LLM:** `qwen2.5:3b` via Ollama (~2GB VRAM, q4_K_M). Downgraded from 7B to 3B to avoid PSU power spikes on RTX 3050 during model load.
 - **Image Gen:** Stable Diffusion 1.5 via `diffusers` (float16, ~3.5GB VRAM, 512×512)  
 - **Max concurrent processes:** ONE model in VRAM at a time. No exceptions.
-- **RAM Pressure Mitigation:** 8GB DDR4 is tight with Windows + dev tools + Ollama. Limit Ollama context window to `num_ctx=4096`. Close unnecessary Chrome tabs during generation. Qwen 2.5 7B loads primarily into VRAM (not system RAM) on CUDA, so it works — but monitor with Task Manager if you see slowdowns.
+- **RAM Pressure Mitigation:** 8GB DDR4 is tight with Windows + dev tools + Ollama. Limit Ollama context window to `num_ctx=4096`. Close unnecessary Chrome tabs during generation. Qwen 2.5 3B loads primarily into VRAM (not system RAM) on CUDA, so it works — but monitor with Task Manager if you see slowdowns.
 
 ---
 
@@ -205,7 +205,7 @@ class Script(BaseModel):
 ```python
 # ALWAYS pass these options in every Ollama API call:
 response = ollama.chat(
-    model="qwen2.5:7b",
+    model="qwen2.5:3b",
     messages=[...],
     format="json",       # Forces Ollama to output valid JSON — prevents markdown wrapping
     options={
@@ -310,7 +310,7 @@ class VRAMManager:
         async with httpx.AsyncClient() as client:
             await client.post(
                 f"{self.OLLAMA_BASE}/api/generate",
-                json={"model": "qwen2.5:7b", "keep_alive": 0}
+                json={"model": "qwen2.5:3b", "keep_alive": 0}
             )
         # Now clean up any PyTorch residuals (for safety)
         gc.collect()
@@ -335,7 +335,7 @@ class VRAMManager:
 
 ### Pipeline Execution Order (ALWAYS)
 1. User submits script (or requests generation)
-2. `load_llm()` → Qwen 2.5 7B generates/parses scenes → `unload_llm()`
+2. `load_llm()` → Qwen 2.5 3B generates/parses scenes → `unload_llm()`
 3. `load_sd()` → SD 1.5 generates frames for each scene → `unload_sd()`
 4. Return complete storyboard to frontend
 
@@ -370,7 +370,7 @@ class VRAMManager:
 - **Commit:** `Step 2: Database models and Pydantic schemas`
 
 **Step 3 — LLM Client + VRAM Manager**
-- Implement `llm_client.py` — wrapper around Ollama Python client for `qwen2.5:7b`
+- Implement `llm_client.py` — wrapper around Ollama Python client for `qwen2.5:3b`
   - **CRITICAL:** Always pass `format="json"` in Ollama API calls to force JSON output mode
   - Add a `clean_json_response(text)` helper that:
     1. Strips markdown fences (` ```json ... ``` `)
@@ -380,7 +380,7 @@ class VRAMManager:
     5. Returns clean string ready for `json.loads()` → Pydantic
   - Set `num_ctx=4096` to limit context window and reduce RAM pressure on 8GB system
 - Implement `vram_manager.py` — singleton with load/unload/swap logic (see VRAM Management Protocol above)
-  - Ollama unload MUST use HTTP API: `POST /api/generate` with `{"model": "qwen2.5:7b", "keep_alive": 0}`
+  - Ollama unload MUST use HTTP API: `POST /api/generate` with `{"model": "qwen2.5:3b", "keep_alive": 0}`
   - **DO NOT** rely on `torch.cuda.empty_cache()` to unload Ollama — it runs as a separate process
 - Add `httpx` to requirements.txt (for async Ollama HTTP calls in VRAM manager)
 - Test: Send a prompt to Qwen, get JSON response, verify VRAM clears after unload
@@ -631,9 +631,9 @@ npm install
 npm run dev
 
 # Ollama
-ollama run qwen2.5:7b          # Test LLM
+ollama run qwen2.5:3b          # Test LLM
 ollama ps                       # Check loaded models
-ollama stop qwen2.5:7b          # Unload from VRAM
+ollama stop qwen2.5:3b          # Unload from VRAM
 
 # VRAM monitoring
 nvidia-smi                      # Check GPU memory usage

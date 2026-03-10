@@ -1,7 +1,7 @@
 """LLM client wrapper for CutAI.
 
 Supports two providers:
-- local: Ollama with qwen2.5:7b (forced JSON output)
+- local: Ollama with qwen2.5:3b (forced JSON output)
 - groq: Groq cloud API with llama-3.1-8b-instant
 """
 
