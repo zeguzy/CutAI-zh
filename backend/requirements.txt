@@ -11,3 +11,4 @@ accelerate==1.2.1
 pillow==11.1.0
 pydantic==2.10.4
 python-multipart==0.0.20
+fpdf2==2.8.2
