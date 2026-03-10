@@ -1,6 +1,7 @@
 import { FileText, LayoutGrid, Clock, BarChart3 } from 'lucide-react'
 import useProjectStore from '../stores/useProjectStore'
 import useUIStore from '../stores/useUIStore'
+import useStoryboardStore from '../stores/useStoryboardStore'
 import ScriptEditor from '../components/script/ScriptEditor'
 import ScriptGenerator from '../components/script/ScriptGenerator'
 import GenerationProgress from '../components/script/GenerationProgress'
@@ -9,6 +10,7 @@ import VisualTimeline from '../components/timeline/VisualTimeline'
 import MoodGraph from '../components/analysis/MoodGraph'
 import SoundtrackPanel from '../components/analysis/SoundtrackPanel'
 import CameraBreakdown from '../components/analysis/CameraBreakdown'
+import ExportDropdown from '../components/shared/ExportDropdown'
 
 const TABS = {
   script: { label: 'Script', icon: FileText },
@@ -19,6 +21,7 @@ const TABS = {
 
 export default function ProjectPage() {
   const currentProject = useProjectStore((s) => s.currentProject)
+  const scenes = useStoryboardStore((s) => s.scenes)
 
   const activeTab = useUIStore((s) => s.activeTab)
   const scriptMode = useUIStore((s) => s.scriptMode)
@@ -55,11 +58,21 @@ export default function ProjectPage() {
     <div className="h-full flex flex-col">
       {/* Tab header bar */}
       <div className="px-6 pt-5 pb-4 border-b border-surface-700/50">
-        <div className="flex items-center gap-2.5">
-          <Icon className="w-4.5 h-4.5 text-accent-500" />
-          <h2 className="text-base font-semibold text-zinc-200">
-            {tab.label}
-          </h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Icon className="w-4.5 h-4.5 text-accent-500" />
+            <h2 className="text-base font-semibold text-zinc-200">
+              {tab.label}
+            </h2>
+          </div>
+          {currentProject?.id && (
+            <ExportDropdown
+              projectId={currentProject.id}
+              projectTitle={currentProject.title}
+              genre={currentProject.genre}
+              sceneCount={scenes.length}
+            />
+          )}
         </div>
       </div>
 
