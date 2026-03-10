@@ -8,7 +8,7 @@ to free Ollama's VRAM. We MUST use Ollama's HTTP API with keep_alive=0.
 import gc
 import httpx
 
-from config import OLLAMA_BASE_URL, LLM_MODEL
+from config import OLLAMA_BASE_URL, LLM_MODEL, LLM_PROVIDER
 
 
 class VRAMManager:
@@ -24,7 +24,12 @@ class VRAMManager:
         return cls._instance
 
     async def load_llm(self):
-        """Ensure LLM is ready. Unload SD first if loaded."""
+        """Ensure LLM is ready. Unload SD first if loaded.
+
+        No-op for Groq provider (cloud-based, no local VRAM usage).
+        """
+        if LLM_PROVIDER == "groq":
+            return
         if self.current_model == "sd":
             await self.unload_sd()
         # Ollama auto-loads on first inference call
@@ -42,7 +47,12 @@ class VRAMManager:
 
         CRITICAL: torch.cuda.empty_cache() does NOT work for Ollama.
         Ollama is a separate process — must use its HTTP API with keep_alive=0.
+        No-op for Groq provider (cloud-based).
         """
+        if LLM_PROVIDER == "groq":
+            self.current_model = None
+            return
+
         async with httpx.AsyncClient() as client:
             try:
                 await client.post(
