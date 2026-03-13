@@ -24,7 +24,10 @@
       "Bash(cd \"D:/AI MEGA PROJECTS/CutAI/backend\" && ./venv/Scripts/python.exe -m pip install diffusers --quiet 2>&1 | tail -3)",
       "Bash(cd \"D:/AI MEGA PROJECTS/CutAI/backend\" && ./venv/Scripts/python.exe -m pip install accelerate --quiet 2>&1 | tail -3)",
       "Bash(cd \"D:/AI MEGA PROJECTS/CutAI/backend\" && ./venv/Scripts/python.exe -m pip install sqlalchemy diffusers accelerate ollama fpdf2 replicate 2>&1)",
-      "Bash(cd \"D:/AI MEGA PROJECTS/CutAI/backend\" && ./venv/Scripts/python.exe -m pip install sqlalchemy 2>&1)"
+      "Bash(cd \"D:/AI MEGA PROJECTS/CutAI/backend\" && ./venv/Scripts/python.exe -m pip install sqlalchemy 2>&1)",
+      "Bash(cd \"D:\\\\AI MEGA PROJECTS\\\\CutAI\" && backend/venv/Scripts/pip install python-dotenv==1.0.1 -q 2>&1 | tail -1)",
+      "Bash(ls \"D:\\\\AI MEGA PROJECTS\\\\CutAI\\\\backend\\\\venv\\\\Scripts\\\\pip\"* 2>/dev/null || ls \"D:\\\\AI MEGA PROJECTS\\\\CutAI\\\\backend\\\\venv\\\\bin\\\\pip\"* 2>/dev/null || echo \"no pip found\")",
+      "Bash(cd \"D:/AI MEGA PROJECTS/CutAI\" && pip install python-dotenv==1.0.1 -q 2>&1 | tail -3)"
     ]
   }
 }

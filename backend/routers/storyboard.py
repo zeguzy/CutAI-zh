@@ -195,46 +195,65 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
 
         # =================================================================
         # PHASE 3: SD — generate ALL frames (SD 1.5 on CUDA, float16)
+        # Gracefully skipped if no valid image API token is available.
         # =================================================================
         total_frames = sum(len(shots) for _, shots in scene_shot_info)
+        frames_generated = False
 
         if total_frames > 0:
-            yield _sse({
-                "type": "progress", "stage": "loading_sd",
-                "message": "Loading Stable Diffusion...", "progress": 55,
-            })
-            await load_sd_pipeline()
+            try:
+                yield _sse({
+                    "type": "progress", "stage": "loading_sd",
+                    "message": "Loading Stable Diffusion...", "progress": 55,
+                })
+                await load_sd_pipeline()
 
-            frame_idx = 0
-            # Track first frame per scene for the scene thumbnail
-            scene_frame_paths: dict[int, str] = {}
+                frame_idx = 0
+                # Track first frame per scene for the scene thumbnail
+                scene_frame_paths: dict[int, str] = {}
 
-            for scene_id, shots in scene_shot_info:
-                for sd_prompt, shot_number in shots:
-                    frame_idx += 1
-                    progress = 55 + int((frame_idx / total_frames) * 40)
-                    yield _sse({
-                        "type": "progress", "stage": "generating_frames",
-                        "message": f"Generating frame {frame_idx}/{total_frames}...",
-                        "progress": progress,
-                    })
-                    path = await generate_frame(sd_prompt, scene_id, shot_number)
-                    if scene_id not in scene_frame_paths:
-                        scene_frame_paths[scene_id] = path
+                for scene_id, shots in scene_shot_info:
+                    for sd_prompt, shot_number in shots:
+                        frame_idx += 1
+                        progress = 55 + int((frame_idx / total_frames) * 40)
+                        yield _sse({
+                            "type": "progress", "stage": "generating_frames",
+                            "message": f"Generating frame {frame_idx}/{total_frames}...",
+                            "progress": progress,
+                        })
+                        path = await generate_frame(sd_prompt, scene_id, shot_number)
+                        if scene_id not in scene_frame_paths:
+                            scene_frame_paths[scene_id] = path
 
-            yield _sse({
-                "type": "progress", "stage": "unloading_sd",
-                "message": "Cleaning up GPU memory...", "progress": 96,
-            })
-            await unload_sd_pipeline()
+                yield _sse({
+                    "type": "progress", "stage": "unloading_sd",
+                    "message": "Cleaning up GPU memory...", "progress": 96,
+                })
+                await unload_sd_pipeline()
 
-            # Update scene records with representative frame paths
-            async with async_session() as session:
-                async with session.begin():
-                    for scene_id, frame_path in scene_frame_paths.items():
-                        scene_rec = await session.get(SceneDB, scene_id)
-                        if scene_rec:
-                            scene_rec.frame_image_path = frame_path
+                # Update scene records with representative frame paths
+                async with async_session() as session:
+                    async with session.begin():
+                        for scene_id, frame_path in scene_frame_paths.items():
+                            scene_rec = await session.get(SceneDB, scene_id)
+                            if scene_rec:
+                                scene_rec.frame_image_path = frame_path
+
+                frames_generated = True
+
+            except Exception as img_err:
+                # Image generation failed (e.g. missing Replicate token) —
+                # continue without frames rather than aborting the whole pipeline.
+                yield _sse({
+                    "type": "progress", "stage": "skipping_frames",
+                    "message": "Skipping frame generation (no valid API token)",
+                    "progress": 95,
+                })
+                try:
+                    await unload_sd_pipeline()
+                except Exception:
+                    pass
+                total_frames = 0
 
         # =================================================================
         # PHASE 4: Complete
