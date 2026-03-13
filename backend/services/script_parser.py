@@ -8,7 +8,7 @@ Two-step pipeline:
 import json
 
 from services.llm_client import chat_with_retry, chat_text_with_retry
-from models.schemas import Script
+from models.schemas import Script, MoodScore, SoundtrackVibe
 
 # --- System prompts ---
 
@@ -97,7 +97,7 @@ def generate_script(genre: str, premise: str, num_scenes: int = 5) -> str:
         {
             "role": "user",
             "content": (
-                f"Write a {genre} script with {num_scenes} scenes based on this premise:\n\n"
+                f"Write a {genre} script with {max(num_scenes - 1, 2)} scenes based on this premise:\n\n"
                 f"{premise}\n\n"
                 f"Write the full screenplay text with proper slug lines, action, and dialogue."
             ),
@@ -137,7 +137,29 @@ def parse_script_to_scenes(script_text: str, genre: str = "drama") -> Script:
         },
     ]
     result = chat_with_retry(messages, retries=3)
-    return Script(**result)
+    script = Script(**result)
+    _fill_missing_defaults(script)
+    return script
+
+
+# --- Defaults for truncated LLM output ---
+
+DEFAULT_MOOD = MoodScore(
+    tension=0.5, emotion=0.5, energy=0.5, darkness=0.5, overall_mood="neutral"
+)
+DEFAULT_SOUNDTRACK = SoundtrackVibe(
+    genre="ambient", tempo="moderate", instruments=["piano"],
+    reference_track="N/A", energy_level=0.5,
+)
+
+
+def _fill_missing_defaults(script: Script) -> None:
+    """Patch scenes where the LLM truncated mood/soundtrack fields."""
+    for scene in script.scenes:
+        if scene.mood is None:
+            scene.mood = DEFAULT_MOOD.model_copy()
+        if scene.soundtrack is None:
+            scene.soundtrack = DEFAULT_SOUNDTRACK.model_copy()
 
 
 def generate_and_parse(genre: str, premise: str, num_scenes: int = 5) -> Script:

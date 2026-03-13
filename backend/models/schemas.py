@@ -38,8 +38,8 @@ class Scene(BaseModel):
     description: str
     characters: list[str]
     shots: list[Shot]
-    mood: MoodScore
-    soundtrack: SoundtrackVibe
+    mood: MoodScore | None = None
+    soundtrack: SoundtrackVibe | None = None
     frame_image_path: str | None = None
 
 
