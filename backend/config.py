@@ -4,6 +4,9 @@ Supports local (Ollama + SD 1.5) and production (Groq + Replicate) providers
 via environment variables.
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 
 # Server
