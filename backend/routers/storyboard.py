@@ -1,14 +1,12 @@
 """Storyboard generation pipeline with SSE progress.
 
-Pipeline order (VRAM-safe, RTX 3050 6GB):
-1. Load LLM → generate/parse script → refine SD prompts per scene → unload LLM
+Pipeline order:
+1. Load LLM → generate/parse script → analyze scenes → unload LLM
 2. Save all structured data to database
-3. Load SD → generate ALL frames → unload SD
-4. Update database with frame paths → return complete result
+3. Return complete text-based storyboard (no image generation)
 """
 
 import asyncio
-import io
 import json
 import os
 import traceback
@@ -26,7 +24,6 @@ from models.schemas import StoryboardGenerateRequest
 from services.vram_manager import vram_manager
 from services.script_parser import generate_script, parse_script_to_scenes
 from services.scene_analyzer import generate_sd_prompts
-from services.image_generator import load_sd_pipeline, unload_sd_pipeline, generate_frame
 
 router = APIRouter(prefix="/api/storyboard", tags=["storyboard"])
 
@@ -118,7 +115,7 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
         # Step 4: Unload LLM — done with all text generation
         yield _sse({
             "type": "progress", "stage": "transition",
-            "message": "Preparing image generation...", "progress": 52,
+            "message": "Finalizing scenes...", "progress": 52,
         })
         await vram_manager.unload_llm()
 
@@ -194,76 +191,7 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
             # Transaction committed on exit of session.begin()
 
         # =================================================================
-        # PHASE 3: SD — generate ALL frames (SD 1.5 on CUDA, float16)
-        # Gracefully skipped if no valid image API token is available.
-        # =================================================================
-        total_frames = sum(len(shots) for _, shots in scene_shot_info)
-        frames_generated = False
-
-        if total_frames > 0:
-            try:
-                yield _sse({
-                    "type": "progress", "stage": "loading_sd",
-                    "message": "Loading Stable Diffusion...", "progress": 55,
-                })
-                await load_sd_pipeline()
-
-                frame_idx = 0
-                # Track first frame per scene for the scene thumbnail
-                scene_frame_paths: dict[int, str] = {}
-
-                for scene_id, shots in scene_shot_info:
-                    for sd_prompt, shot_number in shots:
-                        frame_idx += 1
-                        progress = 55 + int((frame_idx / total_frames) * 40)
-                        yield _sse({
-                            "type": "progress", "stage": "generating_frames",
-                            "message": f"Generating frame {frame_idx}/{total_frames}...",
-                            "progress": progress,
-                        })
-                        path = await generate_frame(sd_prompt, scene_id, shot_number)
-                        if path is None:
-                            yield _sse({
-                                "type": "progress", "stage": "skipping_frame",
-                                "message": f"Skipping frame {frame_idx} (generation failed)",
-                                "progress": progress,
-                            })
-                            continue
-                        if scene_id not in scene_frame_paths:
-                            scene_frame_paths[scene_id] = path
-
-                yield _sse({
-                    "type": "progress", "stage": "unloading_sd",
-                    "message": "Cleaning up GPU memory...", "progress": 96,
-                })
-                await unload_sd_pipeline()
-
-                # Update scene records with representative frame paths
-                async with async_session() as session:
-                    async with session.begin():
-                        for scene_id, frame_path in scene_frame_paths.items():
-                            scene_rec = await session.get(SceneDB, scene_id)
-                            if scene_rec:
-                                scene_rec.frame_image_path = frame_path
-
-                frames_generated = True
-
-            except Exception as img_err:
-                # Image generation failed (e.g. missing Replicate token) —
-                # continue without frames rather than aborting the whole pipeline.
-                yield _sse({
-                    "type": "progress", "stage": "skipping_frames",
-                    "message": "Skipping frame generation (no valid API token)",
-                    "progress": 95,
-                })
-                try:
-                    await unload_sd_pipeline()
-                except Exception:
-                    pass
-                total_frames = 0
-
-        # =================================================================
-        # PHASE 4: Complete
+        # PHASE 3: Complete — text-based storyboard, no image generation
         # =================================================================
         yield _sse({
             "type": "complete",
@@ -276,7 +204,6 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
                 "genre": parsed.genre,
                 "logline": parsed.logline,
                 "num_scenes": num_scenes,
-                "total_frames": total_frames,
             },
         })
 
@@ -289,10 +216,6 @@ async def _run_pipeline(request: StoryboardGenerateRequest):
         # Ensure VRAM cleanup on error — never leave models loaded
         try:
             await vram_manager.unload_llm()
-        except Exception:
-            pass
-        try:
-            await unload_sd_pipeline()
         except Exception:
             pass
 

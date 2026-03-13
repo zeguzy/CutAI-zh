@@ -9,16 +9,18 @@ import {
   MapPin,
   Hash,
   Pencil,
-  Check,
   RefreshCw,
   Loader2,
-  Wand2,
-  ChevronDown,
-  ChevronUp,
+  Sun,
+  Moon,
+  Sunrise,
+  Sunset,
+  Cloud,
+  Users,
+  Music,
+  Activity,
 } from 'lucide-react'
 import { formatDuration } from '../../utils/helpers'
-import FramePreview from './FramePreview'
-import { API_URL } from '../../utils/constants'
 import useStoryboardStore from '../../stores/useStoryboardStore'
 
 // Film-industry color coding for shot types
@@ -40,20 +42,45 @@ const ANGLE_STYLE = {
   "bird's-eye":  { bg: 'bg-teal-500/15',   text: 'text-teal-400',   border: 'border-teal-500/30' },
 }
 
-const MOVEMENT_LABELS = {
-  'static':    'Static',
-  'pan-left':  'Pan L',
-  'pan-right': 'Pan R',
-  'tilt-up':   'Tilt Up',
-  'tilt-down': 'Tilt Dn',
-  'dolly-in':  'Dolly In',
-  'dolly-out': 'Dolly Out',
-  'crane':     'Crane',
+const MOVEMENT_ARROWS = {
+  'static':    { icon: '---', label: 'Static' },
+  'pan-left':  { icon: '<--', label: 'Pan Left' },
+  'pan-right': { icon: '-->', label: 'Pan Right' },
+  'tilt-up':   { icon: ' ^ ', label: 'Tilt Up' },
+  'tilt-down': { icon: ' v ', label: 'Tilt Down' },
+  'dolly-in':  { icon: '>>>', label: 'Dolly In' },
+  'dolly-out': { icon: '<<<', label: 'Dolly Out' },
+  'crane':     { icon: ' ~ ', label: 'Crane' },
 }
 
 function getBadgeStyle(map, key) {
   const k = (key || '').toLowerCase()
   return map[k] || { bg: 'bg-zinc-500/15', text: 'text-zinc-400', border: 'border-zinc-500/30' }
+}
+
+function TimeIcon({ time }) {
+  const t = (time || '').toLowerCase()
+  if (t.includes('night')) return <Moon className="w-3.5 h-3.5" />
+  if (t.includes('dawn') || t.includes('sunrise')) return <Sunrise className="w-3.5 h-3.5" />
+  if (t.includes('evening') || t.includes('sunset') || t.includes('dusk')) return <Sunset className="w-3.5 h-3.5" />
+  if (t.includes('morning') || t.includes('afternoon') || t.includes('day')) return <Sun className="w-3.5 h-3.5" />
+  return <Cloud className="w-3.5 h-3.5" />
+}
+
+// Mood bar component
+function MoodBar({ label, value, color }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] font-mono text-surface-400 w-14 text-right">{label}</span>
+      <div className="flex-1 h-1.5 bg-surface-750 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${Math.round((value || 0) * 100)}%` }}
+        />
+      </div>
+      <span className="text-[10px] font-mono text-surface-500 w-8">{((value || 0) * 100).toFixed(0)}%</span>
+    </div>
+  )
 }
 
 // Backdrop overlay
@@ -86,8 +113,6 @@ export default function ShotPanel({ scene, onClose }) {
   const descRef = useRef(null)
 
   const updateScene = useStoryboardStore((s) => s.updateScene)
-  const regenerateFrame = useStoryboardStore((s) => s.regenerateFrame)
-  const updateShotPrompt = useStoryboardStore((s) => s.updateShotPrompt)
   const regenerating = useStoryboardStore((s) => s.regenerating)
   const isRegenerating = regenerating === scene.id
 
@@ -120,6 +145,10 @@ export default function ShotPanel({ scene, onClose }) {
   if (!scene) return null
 
   const shots = scene.shots || []
+  const characters = scene.characters || []
+  const mood = scene.mood || {}
+  const soundtrack = scene.soundtrack || {}
+  const totalDuration = shots.reduce((sum, s) => sum + (s.duration_seconds || 0), 0)
 
   async function handleDescSave() {
     const trimmed = descText.trim()
@@ -127,10 +156,6 @@ export default function ShotPanel({ scene, onClose }) {
       await updateScene(scene.id, { description: trimmed })
     }
     setEditingDesc(false)
-  }
-
-  async function handleRegenerateFrame() {
-    await regenerateFrame(scene.id)
   }
 
   return (
@@ -163,117 +188,183 @@ export default function ShotPanel({ scene, onClose }) {
               </div>
             )}
 
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-surface-700/60 shrink-0">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-mono font-bold text-accent-500 bg-accent-500/10 px-1.5 py-0.5 rounded">
-                    Scene {scene.scene_number}
+            {/* ============================================ */}
+            {/* HEADER — Scene title block (screenplay style) */}
+            {/* ============================================ */}
+            <div className="shrink-0 border-b border-surface-700/60">
+              {/* Slug line bar */}
+              <div className="bg-surface-800 px-5 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-[10px] font-mono font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded shrink-0">
+                    SCENE {scene.scene_number}
                   </span>
+                  <h3 className="text-sm font-semibold text-zinc-100 truncate">
+                    {scene.title}
+                  </h3>
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-100 truncate">
-                  {scene.title}
-                </h3>
-                {scene.location && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <MapPin className="w-3 h-3 text-surface-500" />
-                    <span className="text-[11px] font-mono text-surface-400">
-                      {scene.location}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-1 shrink-0 ml-3">
-                <button
-                  onClick={handleRegenerateFrame}
-                  disabled={isRegenerating}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-surface-400 hover:text-accent-400 hover:bg-accent-500/10 transition-all"
-                  title="Regenerate frame"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-surface-400 hover:text-zinc-200 hover:bg-surface-700 transition-all"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-surface-400 hover:text-zinc-200 hover:bg-surface-700 transition-all shrink-0 ml-2"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Meta row: location, time, characters, duration */}
+              <div className="px-5 py-2.5 flex flex-wrap items-center gap-3 text-[11px] font-mono text-surface-400">
+                {scene.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-surface-500" />
+                    {scene.location}
+                  </span>
+                )}
+                {scene.time_of_day && (
+                  <span className="flex items-center gap-1 text-amber-400/70">
+                    <TimeIcon time={scene.time_of_day} />
+                    {scene.time_of_day.toUpperCase()}
+                  </span>
+                )}
+                {totalDuration > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-surface-500" />
+                    {formatDuration(totalDuration)}
+                  </span>
+                )}
+                {characters.length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3 h-3 text-surface-500" />
+                    {characters.join(', ')}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Scene description — editable */}
-            <div className="px-5 pt-4 shrink-0">
-              {editingDesc ? (
-                <div className="mb-3">
-                  <textarea
-                    ref={descRef}
-                    value={descText}
-                    onChange={(e) => setDescText(e.target.value)}
-                    rows={3}
-                    className="w-full bg-surface-800 border border-accent-500/40 rounded-lg px-3 py-2 text-xs text-zinc-300 leading-relaxed focus:outline-none focus:border-accent-500 resize-none"
-                  />
-                  <div className="flex gap-2 justify-end mt-1">
-                    <button
-                      onClick={() => { setEditingDesc(false); setDescText(scene.description || '') }}
-                      className="text-[10px] text-surface-400 hover:text-zinc-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDescSave}
-                      className="text-[10px] text-accent-400 hover:text-accent-300 font-semibold"
-                    >
-                      Save
-                    </button>
+            {/* ============================================ */}
+            {/* SCROLLABLE CONTENT */}
+            {/* ============================================ */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Scene description — editable */}
+              <div className="px-5 pt-4 pb-2">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-surface-500 mb-2">Scene Description</div>
+                {editingDesc ? (
+                  <div className="mb-3">
+                    <textarea
+                      ref={descRef}
+                      value={descText}
+                      onChange={(e) => setDescText(e.target.value)}
+                      rows={4}
+                      className="w-full bg-surface-800 border border-accent-500/40 rounded-lg px-3 py-2 text-xs font-mono text-zinc-300 leading-relaxed focus:outline-none focus:border-accent-500 resize-none"
+                    />
+                    <div className="flex gap-2 justify-end mt-1">
+                      <button
+                        onClick={() => { setEditingDesc(false); setDescText(scene.description || '') }}
+                        className="text-[10px] text-surface-400 hover:text-zinc-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleDescSave}
+                        className="text-[10px] text-accent-400 hover:text-accent-300 font-semibold"
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div
-                  onClick={() => setEditingDesc(true)}
-                  className="mb-3 p-2.5 bg-surface-800/50 border border-surface-700/40 rounded-lg cursor-pointer hover:border-accent-500/20 transition-colors group/desc"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs text-zinc-400 leading-relaxed flex-1">
-                      {scene.description || 'Click to add description...'}
-                    </p>
-                    <Pencil className="w-3 h-3 text-surface-500 group-hover/desc:text-accent-400 shrink-0 mt-0.5 transition-colors" />
+                ) : (
+                  <div
+                    onClick={() => setEditingDesc(true)}
+                    className="mb-3 p-3 bg-surface-800/50 border border-surface-700/40 rounded-lg cursor-pointer hover:border-accent-500/20 transition-colors group/desc"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-mono text-zinc-300 leading-relaxed flex-1 whitespace-pre-wrap">
+                        {scene.description || 'Click to add description...'}
+                      </p>
+                      <Pencil className="w-3 h-3 text-surface-500 group-hover/desc:text-accent-400 shrink-0 mt-0.5 transition-colors" />
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Scene frame preview */}
-            <div className="px-5 shrink-0">
-              <FramePreview
-                framePath={scene.frame_image_path}
-                alt={scene.title}
-              />
-            </div>
-
-            {/* Shot list */}
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Camera className="w-3.5 h-3.5 text-surface-400" />
-                <span className="text-xs font-medium text-surface-400 uppercase tracking-wider">
-                  {shots.length} Shot{shots.length !== 1 ? 's' : ''}
-                </span>
+                )}
               </div>
 
-              <motion.div
-                variants={listVariants}
-                initial="hidden"
-                animate="visible"
-                className="space-y-3"
-              >
-                {shots.map((shot) => (
-                  <ShotItem
-                    key={shot.id || shot.shot_number}
-                    shot={shot}
-                    sceneId={scene.id}
-                    updateShotPrompt={updateShotPrompt}
-                  />
-                ))}
-              </motion.div>
+              {/* ============================================ */}
+              {/* MOOD & SOUNDTRACK — compact analysis section */}
+              {/* ============================================ */}
+              <div className="px-5 pb-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Mood analysis */}
+                  <div className="bg-surface-800/50 border border-surface-700/40 rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <Activity className="w-3 h-3 text-surface-400" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">Mood</span>
+                      {mood.overall_mood && (
+                        <span className="text-[9px] font-mono text-accent-400 ml-auto">{mood.overall_mood}</span>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      <MoodBar label="Tension" value={mood.tension} color="bg-red-500" />
+                      <MoodBar label="Emotion" value={mood.emotion} color="bg-blue-400" />
+                      <MoodBar label="Energy" value={mood.energy} color="bg-amber-400" />
+                      <MoodBar label="Dark" value={mood.darkness} color="bg-violet-500" />
+                    </div>
+                  </div>
+
+                  {/* Soundtrack vibe */}
+                  <div className="bg-surface-800/50 border border-surface-700/40 rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 mb-2.5">
+                      <Music className="w-3 h-3 text-surface-400" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">Soundtrack</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {soundtrack.genre && (
+                        <div className="text-[10px] font-mono text-zinc-400">
+                          <span className="text-surface-500">Genre:</span> {soundtrack.genre}
+                        </div>
+                      )}
+                      {soundtrack.tempo && (
+                        <div className="text-[10px] font-mono text-zinc-400">
+                          <span className="text-surface-500">Tempo:</span> {soundtrack.tempo}
+                        </div>
+                      )}
+                      {soundtrack.instruments && soundtrack.instruments.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {soundtrack.instruments.map((inst, i) => (
+                            <span key={i} className="text-[8px] font-mono text-zinc-500 bg-surface-750 px-1 py-0.5 rounded">
+                              {inst}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {soundtrack.reference_track && (
+                        <div className="text-[9px] font-mono text-surface-500 italic mt-1 truncate">
+                          {soundtrack.reference_track}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ============================================ */}
+              {/* SHOT BREAKDOWN — styled as production document */}
+              {/* ============================================ */}
+              <div className="px-5 py-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Camera className="w-3.5 h-3.5 text-surface-400" />
+                  <span className="text-[10px] font-mono font-medium text-surface-400 uppercase tracking-wider">
+                    Shot Breakdown — {shots.length} Shot{shots.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                <motion.div
+                  variants={listVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-2.5"
+                >
+                  {shots.map((shot) => (
+                    <ShotItem key={shot.id || shot.shot_number} shot={shot} />
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         </>
@@ -283,33 +374,19 @@ export default function ShotPanel({ scene, onClose }) {
 }
 
 
-function ShotItem({ shot, sceneId, updateShotPrompt }) {
-  const [showPrompt, setShowPrompt] = useState(false)
-  const [editingPrompt, setEditingPrompt] = useState(false)
-  const [promptText, setPromptText] = useState(shot.sd_prompt || '')
-
+function ShotItem({ shot }) {
   const typeStyle = getBadgeStyle(SHOT_TYPE_STYLE, shot.shot_type)
   const angleStyle = getBadgeStyle(ANGLE_STYLE, shot.camera_angle)
-  const movementLabel = MOVEMENT_LABELS[shot.camera_movement] || shot.camera_movement
-  const frameUrl = shot.sd_prompt
-    ? `${API_URL}/generated/frames/scene_${sceneId}_shot_${shot.shot_number}.png`
-    : null
-
-  async function handlePromptSave() {
-    const trimmed = promptText.trim()
-    if (trimmed && trimmed !== shot.sd_prompt) {
-      await updateShotPrompt(shot.id, trimmed)
-    }
-    setEditingPrompt(false)
-  }
+  const movement = MOVEMENT_ARROWS[shot.camera_movement] || { icon: '---', label: shot.camera_movement || 'Static' }
 
   return (
     <motion.div
       variants={itemVariants}
-      className="bg-surface-800 border border-surface-700/60 rounded-xl p-4"
+      className="bg-surface-800 border border-surface-700/60 rounded-xl overflow-hidden"
     >
-      {/* Shot header — number + badges */}
-      <div className="flex items-center flex-wrap gap-2 mb-3">
+      {/* Shot header strip */}
+      <div className="flex items-center gap-2 px-3.5 py-2.5 bg-surface-800 border-b border-surface-700/40">
+        {/* Shot number */}
         <div className="flex items-center gap-1">
           <Hash className="w-3 h-3 text-surface-500" />
           <span className="text-xs font-mono font-bold text-zinc-300">
@@ -327,94 +404,32 @@ function ShotItem({ shot, sceneId, updateShotPrompt }) {
           {shot.camera_angle}
         </span>
 
-        {/* Camera movement */}
+        {/* Camera movement with directional indicator */}
         <span className="flex items-center gap-1 text-[10px] font-mono text-surface-400 bg-surface-750 px-1.5 py-0.5 rounded">
           <Move className="w-2.5 h-2.5" />
-          {movementLabel}
+          {movement.label}
         </span>
 
-        {/* Duration */}
+        {/* Duration — right-aligned */}
         <span className="flex items-center gap-1 text-[10px] font-mono text-surface-400 ml-auto">
           <Clock className="w-2.5 h-2.5" />
           {formatDuration(shot.duration_seconds || 0)}
         </span>
       </div>
 
-      {/* Shot frame thumbnail */}
-      <div className="aspect-video bg-surface-850 rounded-lg border border-surface-700/40 overflow-hidden mb-3">
-        <img
-          src={frameUrl}
-          alt={`Shot ${shot.shot_number}`}
-          className="w-full h-full object-cover"
-          loading="lazy"
-          onError={(e) => {
-            e.target.style.display = 'none'
-            e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-surface-600 text-[10px] font-mono">No frame</div>'
-          }}
-        />
-      </div>
+      {/* Shot description body */}
+      <div className="px-3.5 py-3">
+        <p className="text-xs font-mono text-zinc-300 leading-relaxed">
+          {shot.description}
+        </p>
 
-      {/* Description */}
-      <p className="text-xs text-zinc-300 leading-relaxed mb-2">
-        {shot.description}
-      </p>
-
-      {/* Dialogue */}
-      {shot.dialogue && (
-        <div className="flex gap-2 mt-2 p-2.5 bg-surface-750 rounded-lg border border-surface-700/40">
-          <MessageSquare className="w-3 h-3 text-accent-500 shrink-0 mt-0.5" />
-          <p className="text-xs font-mono text-accent-300/80 italic leading-relaxed">
-            "{shot.dialogue}"
-          </p>
-        </div>
-      )}
-
-      {/* SD Prompt section */}
-      <div className="mt-3 pt-3 border-t border-surface-700/40">
-        <button
-          onClick={() => setShowPrompt(!showPrompt)}
-          className="flex items-center gap-1.5 text-[10px] font-mono text-surface-500 hover:text-accent-400 transition-colors w-full"
-        >
-          <Wand2 className="w-3 h-3" />
-          <span>SD Prompt</span>
-          {showPrompt ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
-        </button>
-
-        {showPrompt && (
-          <div className="mt-2">
-            {editingPrompt ? (
-              <div>
-                <textarea
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                  rows={3}
-                  className="w-full bg-surface-850 border border-accent-500/40 rounded-lg px-3 py-2 text-[11px] font-mono text-zinc-400 leading-relaxed focus:outline-none focus:border-accent-500 resize-none"
-                />
-                <div className="flex gap-2 justify-end mt-1">
-                  <button
-                    onClick={() => { setEditingPrompt(false); setPromptText(shot.sd_prompt || '') }}
-                    className="text-[10px] text-surface-400 hover:text-zinc-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handlePromptSave}
-                    className="text-[10px] text-accent-400 hover:text-accent-300 font-semibold"
-                  >
-                    Save Prompt
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div
-                onClick={() => { setEditingPrompt(true); setPromptText(shot.sd_prompt || '') }}
-                className="p-2 bg-surface-850 border border-surface-700/40 rounded-lg cursor-pointer hover:border-accent-500/20 transition-colors"
-              >
-                <p className="text-[11px] font-mono text-surface-500 leading-relaxed">
-                  {shot.sd_prompt || 'No prompt — click to add'}
-                </p>
-              </div>
-            )}
+        {/* Dialogue — styled as screenplay dialogue */}
+        {shot.dialogue && (
+          <div className="mt-3 flex gap-2 p-2.5 bg-surface-750/60 rounded-lg border-l-2 border-accent-500/40">
+            <MessageSquare className="w-3 h-3 text-accent-500 shrink-0 mt-0.5" />
+            <p className="text-xs italic text-accent-300/80 leading-relaxed">
+              "{shot.dialogue}"
+            </p>
           </div>
         )}
       </div>

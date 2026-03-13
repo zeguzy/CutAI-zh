@@ -104,22 +104,6 @@ const useStoryboardStore = create((set, get) => ({
     }
   },
 
-  // Regenerate only the frame for a scene
-  regenerateFrame: async (sceneId) => {
-    set({ regenerating: sceneId })
-    try {
-      const { data } = await api.post(`/api/scenes/${sceneId}/regenerate-frame`)
-      set((s) => ({
-        scenes: s.scenes.map((sc) => (sc.id === sceneId ? data : sc)),
-        regenerating: null,
-      }))
-      return data
-    } catch {
-      set({ regenerating: null })
-      return null
-    }
-  },
-
   // Update a shot's SD prompt
   updateShotPrompt: async (shotId, sdPrompt) => {
     try {

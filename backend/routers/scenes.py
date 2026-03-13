@@ -166,56 +166,6 @@ async def update_shot_prompt(
     }
 
 
-@router.post("/{scene_id}/regenerate-frame")
-async def regenerate_scene_frame(
-    scene_id: int,
-    session: AsyncSession = Depends(get_session),
-):
-    """Regenerate the frame for a scene using the first shot's SD prompt.
-
-    This loads SD, generates the frame, unloads SD, and returns the new path.
-    """
-    result = await session.execute(
-        select(Scene)
-        .where(Scene.id == scene_id)
-        .options(selectinload(Scene.shots))
-    )
-    scene = result.scalar_one_or_none()
-    if not scene:
-        raise HTTPException(404, "Scene not found")
-
-    shots = sorted(scene.shots, key=lambda s: s.shot_number)
-    if not shots or not shots[0].sd_prompt:
-        raise HTTPException(400, "No shot with SD prompt available for this scene")
-
-    from services.vram_manager import vram_manager
-    from services.image_generator import load_sd_pipeline, generate_frame, unload_sd_pipeline
-
-    try:
-        await vram_manager.unload_llm()
-        await load_sd_pipeline()
-        frame_path = await generate_frame(shots[0].sd_prompt, scene_id, shots[0].shot_number)
-        await unload_sd_pipeline()
-    except Exception as e:
-        try:
-            await unload_sd_pipeline()
-        except Exception:
-            pass
-        raise HTTPException(500, f"Frame generation failed: {str(e)}")
-
-    scene.frame_image_path = frame_path
-    await session.commit()
-    await session.refresh(scene)
-
-    result = await session.execute(
-        select(Scene)
-        .where(Scene.id == scene_id)
-        .options(selectinload(Scene.shots))
-    )
-    scene = result.scalar_one()
-    return _scene_to_response(scene)
-
-
 @router.post("/{scene_id}/regenerate")
 async def regenerate_scene(
     scene_id: int,
@@ -240,7 +190,6 @@ async def regenerate_scene(
 
     from services.vram_manager import vram_manager
     from services.scene_analyzer import analyze_shots, score_mood, suggest_soundtrack, generate_sd_prompts
-    from services.image_generator import load_sd_pipeline, generate_frame, unload_sd_pipeline
     from models.schemas import Scene as SceneSchema
 
     scene_data = SceneSchema(
@@ -297,23 +246,11 @@ async def regenerate_scene(
             session.add(shot_rec)
         await session.flush()
 
-        # Phase 2: Generate frame for first shot
-        first_sd_prompt = refined_shots[0].sd_prompt if refined_shots else None
-        if first_sd_prompt:
-            await load_sd_pipeline()
-            frame_path = await generate_frame(first_sd_prompt, scene_id, refined_shots[0].shot_number)
-            scene.frame_image_path = frame_path
-            await unload_sd_pipeline()
-
         await session.commit()
 
     except Exception as e:
         try:
             await vram_manager.unload_llm()
-        except Exception:
-            pass
-        try:
-            await unload_sd_pipeline()
         except Exception:
             pass
         raise HTTPException(500, f"Regeneration failed: {str(e)}")

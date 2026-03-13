@@ -4,33 +4,127 @@ import {
   GripVertical,
   MapPin,
   Clock,
-  Image,
   Pencil,
   Check,
   X,
   Trash2,
   RefreshCw,
   Loader2,
+  Sun,
+  Moon,
+  Sunrise,
+  Sunset,
+  Cloud,
+  Camera,
+  Users,
 } from 'lucide-react'
-import { API_URL } from '../../utils/constants'
 import { formatDuration } from '../../utils/helpers'
 import useStoryboardStore from '../../stores/useStoryboardStore'
 
-const MOOD_COLORS = {
-  melancholic: { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
-  thrilling: { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
-  romantic: { bg: 'bg-pink-500/15', text: 'text-pink-400', border: 'border-pink-500/30' },
-  eerie: { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
-  triumphant: { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
-  tense: { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
-  ominous: { bg: 'bg-violet-500/15', text: 'text-violet-400', border: 'border-violet-500/30' },
-  bittersweet: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  neutral: { bg: 'bg-zinc-500/15', text: 'text-zinc-400', border: 'border-zinc-500/30' },
+// Mood → gradient mapping for the visual panel
+const MOOD_GRADIENTS = {
+  melancholic:  'from-amber-900/60 via-amber-800/30 to-surface-850',
+  thrilling:    'from-red-900/60 via-red-800/30 to-surface-850',
+  romantic:     'from-pink-900/60 via-pink-800/30 to-surface-850',
+  eerie:        'from-blue-900/60 via-indigo-900/30 to-surface-850',
+  triumphant:   'from-amber-800/60 via-yellow-900/30 to-surface-850',
+  tense:        'from-orange-900/60 via-red-900/30 to-surface-850',
+  ominous:      'from-violet-900/60 via-purple-900/30 to-surface-850',
+  bittersweet:  'from-cyan-900/60 via-teal-800/30 to-surface-850',
+  mysterious:   'from-purple-900/60 via-violet-900/30 to-surface-850',
+  calm:         'from-emerald-900/60 via-green-900/30 to-surface-850',
+  hopeful:      'from-sky-900/60 via-blue-800/30 to-surface-850',
+  dark:         'from-zinc-900/80 via-neutral-900/50 to-surface-850',
+  neutral:      'from-zinc-800/50 via-zinc-800/30 to-surface-850',
 }
 
-function getMoodStyle(mood) {
-  const key = (mood || 'neutral').toLowerCase()
-  return MOOD_COLORS[key] || MOOD_COLORS.neutral
+const MOOD_ACCENT = {
+  melancholic: 'text-amber-400',
+  thrilling:   'text-red-400',
+  romantic:    'text-pink-400',
+  eerie:       'text-blue-400',
+  triumphant:  'text-amber-300',
+  tense:       'text-orange-400',
+  ominous:     'text-violet-400',
+  bittersweet: 'text-cyan-400',
+  mysterious:  'text-purple-400',
+  calm:        'text-emerald-400',
+  hopeful:     'text-sky-400',
+  dark:        'text-zinc-400',
+  neutral:     'text-zinc-400',
+}
+
+const MOOD_BORDER = {
+  melancholic: 'border-amber-500/25',
+  thrilling:   'border-red-500/25',
+  romantic:    'border-pink-500/25',
+  eerie:       'border-blue-500/25',
+  triumphant:  'border-amber-500/25',
+  tense:       'border-orange-500/25',
+  ominous:     'border-violet-500/25',
+  bittersweet: 'border-cyan-500/25',
+  mysterious:  'border-purple-500/25',
+  calm:        'border-emerald-500/25',
+  hopeful:     'border-sky-500/25',
+  dark:        'border-zinc-600/40',
+  neutral:     'border-zinc-600/30',
+}
+
+const MOOD_COLORS_BADGE = {
+  melancholic: { bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/30' },
+  thrilling:   { bg: 'bg-red-500/15', text: 'text-red-400', border: 'border-red-500/30' },
+  romantic:    { bg: 'bg-pink-500/15', text: 'text-pink-400', border: 'border-pink-500/30' },
+  eerie:       { bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/30' },
+  triumphant:  { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30' },
+  tense:       { bg: 'bg-orange-500/15', text: 'text-orange-400', border: 'border-orange-500/30' },
+  ominous:     { bg: 'bg-violet-500/15', text: 'text-violet-400', border: 'border-violet-500/30' },
+  bittersweet: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  mysterious:  { bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/30' },
+  calm:        { bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  hopeful:     { bg: 'bg-sky-500/15', text: 'text-sky-400', border: 'border-sky-500/30' },
+  dark:        { bg: 'bg-zinc-500/15', text: 'text-zinc-400', border: 'border-zinc-500/30' },
+  neutral:     { bg: 'bg-zinc-500/15', text: 'text-zinc-400', border: 'border-zinc-500/30' },
+}
+
+function getMoodKey(mood) {
+  return (mood || 'neutral').toLowerCase()
+}
+
+function getGradient(mood) {
+  const k = getMoodKey(mood)
+  return MOOD_GRADIENTS[k] || MOOD_GRADIENTS.neutral
+}
+
+function getAccent(mood) {
+  const k = getMoodKey(mood)
+  return MOOD_ACCENT[k] || MOOD_ACCENT.neutral
+}
+
+function getBorder(mood) {
+  const k = getMoodKey(mood)
+  return MOOD_BORDER[k] || MOOD_BORDER.neutral
+}
+
+function getBadgeStyle(mood) {
+  const k = getMoodKey(mood)
+  return MOOD_COLORS_BADGE[k] || MOOD_COLORS_BADGE.neutral
+}
+
+// Time of day icon
+function TimeIcon({ time }) {
+  const t = (time || '').toLowerCase()
+  if (t.includes('night')) return <Moon className="w-3 h-3" />
+  if (t.includes('dawn') || t.includes('sunrise')) return <Sunrise className="w-3 h-3" />
+  if (t.includes('evening') || t.includes('sunset') || t.includes('dusk')) return <Sunset className="w-3 h-3" />
+  if (t.includes('morning') || t.includes('afternoon') || t.includes('day')) return <Sun className="w-3 h-3" />
+  return <Cloud className="w-3 h-3" />
+}
+
+// Camera angle short label
+function getCameraLabel(shots) {
+  if (!shots || shots.length === 0) return null
+  const first = shots[0]
+  return first.shot_type || first.camera_angle || null
 }
 
 const SceneCard = forwardRef(function SceneCard(
@@ -46,11 +140,12 @@ const SceneCard = forwardRef(function SceneCard(
   const isRegenerating = regenerating === scene.id
 
   const mood = scene.mood?.overall_mood || 'neutral'
-  const moodStyle = getMoodStyle(mood)
+  const moodBadge = getBadgeStyle(mood)
   const totalDuration = (scene.shots || []).reduce((sum, s) => sum + (s.duration_seconds || 0), 0)
-  const frameUrl = scene.frame_image_path
-    ? `${API_URL}/${scene.frame_image_path.replace(/\\/g, '/')}`
-    : null
+  const cameraLabel = getCameraLabel(scene.shots)
+  const characters = scene.characters || []
+  const timeOfDay = scene.time_of_day || ''
+  const description = scene.description || ''
 
   useEffect(() => {
     if (editing && titleRef.current) {
@@ -105,13 +200,14 @@ const SceneCard = forwardRef(function SceneCard(
       transition={{ duration: 0.2 }}
       onClick={onClick}
       className={`
-        bg-surface-800 border rounded-xl overflow-hidden cursor-pointer
+        border rounded-xl overflow-hidden cursor-pointer
         transition-colors group relative
+        ${getBorder(mood)}
         ${isDragging
           ? 'border-accent-500/50 shadow-xl shadow-accent-500/10 z-50 opacity-90'
           : isSelected
             ? 'border-accent-500/40 ring-1 ring-accent-500/20'
-            : 'border-surface-700 hover:border-surface-600'
+            : 'hover:border-surface-500'
         }
       `}
     >
@@ -123,60 +219,66 @@ const SceneCard = forwardRef(function SceneCard(
         </div>
       )}
 
-      {/* Thumbnail area */}
-      <div className="aspect-video bg-surface-850 relative overflow-hidden">
-        {frameUrl ? (
-          <img
-            src={frameUrl}
-            alt={scene.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <Image className="w-8 h-8 text-surface-600 mb-1" />
-            <span className="text-[10px] text-surface-600 font-mono">No frame</span>
+      {/* Rich visual panel — mood gradient + scene description */}
+      <div className={`relative bg-gradient-to-b ${getGradient(mood)} px-3.5 pt-3.5 pb-3 min-h-[120px] flex flex-col justify-between`}>
+        {/* Top row: scene number + time of day + drag handle */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2">
+            {/* Scene number */}
+            <div className="w-6 h-6 rounded bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <span className="text-[11px] font-mono font-bold text-zinc-200">
+                {scene.scene_number}
+              </span>
+            </div>
+
+            {/* Time of day indicator */}
+            {timeOfDay && (
+              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/30 backdrop-blur-sm ${getAccent(mood)}`}>
+                <TimeIcon time={timeOfDay} />
+                <span className="text-[9px] font-mono uppercase tracking-wider">
+                  {timeOfDay}
+                </span>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Scene number badge */}
-        <div className="absolute top-2 left-2 w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <span className="text-[11px] font-mono font-bold text-zinc-200">
-            {scene.scene_number}
-          </span>
+          {/* Drag handle */}
+          <div
+            {...dragHandleProps}
+            className="w-6 h-6 rounded bg-black/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="w-3.5 h-3.5 text-zinc-300" />
+          </div>
         </div>
 
-        {/* Drag handle */}
-        <div
-          {...dragHandleProps}
-          className="absolute top-2 right-2 w-6 h-6 rounded bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-        >
-          <GripVertical className="w-3.5 h-3.5 text-zinc-300" />
-        </div>
+        {/* Scene description — elegant monospace */}
+        <p className="text-[11px] font-mono text-zinc-300/90 leading-relaxed line-clamp-3 mb-2">
+          {description || 'No description'}
+        </p>
 
-        {/* Duration pill */}
-        {totalDuration > 0 && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm">
-            <Clock className="w-2.5 h-2.5 text-zinc-400" />
-            <span className="text-[10px] font-mono text-zinc-300">
-              {formatDuration(totalDuration)}
+        {/* Camera angle badge overlay */}
+        {cameraLabel && (
+          <div className="flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-black/40 backdrop-blur-sm text-zinc-300">
+              <Camera className="w-2.5 h-2.5" />
+              {cameraLabel}
             </span>
           </div>
         )}
 
         {/* Action buttons on hover */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={handleRegenerate}
             disabled={isRegenerating}
-            className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-accent-500/30 transition-colors"
+            className="w-6 h-6 rounded bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-accent-500/30 transition-colors"
             title="Regenerate scene"
           >
             <RefreshCw className="w-3 h-3 text-zinc-300" />
           </button>
           <button
             onClick={handleDeleteClick}
-            className="w-6 h-6 rounded bg-black/60 backdrop-blur-sm flex items-center justify-center hover:bg-red-500/30 transition-colors"
+            className="w-6 h-6 rounded bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-red-500/30 transition-colors"
             title="Delete scene"
           >
             <Trash2 className="w-3 h-3 text-zinc-300" />
@@ -185,10 +287,10 @@ const SceneCard = forwardRef(function SceneCard(
       </div>
 
       {/* Card body */}
-      <div className="p-3">
+      <div className="bg-surface-850 p-3">
         {/* Title — inline editable */}
         {editing ? (
-          <div className="flex items-center gap-1 mb-1" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1 mb-1.5" onClick={(e) => e.stopPropagation()}>
             <input
               ref={titleRef}
               value={editTitle}
@@ -210,7 +312,7 @@ const SceneCard = forwardRef(function SceneCard(
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-1 mb-1 group/title">
+          <div className="flex items-center gap-1 mb-1.5 group/title">
             <h3 className="text-sm font-semibold text-zinc-200 truncate flex-1">
               {scene.title}
             </h3>
@@ -234,14 +336,42 @@ const SceneCard = forwardRef(function SceneCard(
           </div>
         )}
 
-        {/* Bottom row — mood badge + shot count */}
+        {/* Character tags */}
+        {characters.length > 0 && (
+          <div className="flex items-center gap-1 mb-2 flex-wrap">
+            <Users className="w-3 h-3 text-surface-500 shrink-0" />
+            {characters.slice(0, 3).map((char, i) => (
+              <span
+                key={i}
+                className="text-[9px] font-mono text-zinc-400 bg-surface-750 px-1.5 py-0.5 rounded"
+              >
+                {char}
+              </span>
+            ))}
+            {characters.length > 3 && (
+              <span className="text-[9px] font-mono text-surface-500">
+                +{characters.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Bottom row — mood badge + shot count + duration */}
         <div className="flex items-center justify-between">
-          <span className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${moodStyle.bg} ${moodStyle.text} ${moodStyle.border}`}>
+          <span className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded border ${moodBadge.bg} ${moodBadge.text} ${moodBadge.border}`}>
             {mood}
           </span>
-          <span className="text-[10px] font-mono text-surface-500">
-            {(scene.shots || []).length} shots
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-surface-500">
+              {(scene.shots || []).length} shots
+            </span>
+            {totalDuration > 0 && (
+              <span className="flex items-center gap-0.5 text-[10px] font-mono text-surface-500">
+                <Clock className="w-2.5 h-2.5" />
+                {formatDuration(totalDuration)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
