@@ -60,7 +60,7 @@ const useUIStore = create((set, get) => ({
         }
       }
     } catch (err) {
-      set({ genError: err.message || 'Connection failed' })
+      set({ genError: err.message || '连接失败' })
     } finally {
       set({ isGenerating: false })
     }

@@ -65,7 +65,7 @@ const useStoryboardStore = create((set, get) => ({
   addScene: async (scriptId) => {
     try {
       const { data } = await api.post(`/api/scenes/script/${scriptId}`, {
-        title: 'New Scene',
+        title: '新场景',
       })
       set((s) => ({ scenes: [...s.scenes, data] }))
       return data
