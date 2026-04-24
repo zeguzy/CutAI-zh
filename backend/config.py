@@ -17,8 +17,8 @@ PORT = int(os.getenv("PORT", "8000"))
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./cutai.db")
 
 # Provider switches
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")          # "groq" only — local disabled for PSU safety
-IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "replicate") # "replicate" only — local disabled for PSU safety
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local")
+IMAGE_PROVIDER = os.getenv("IMAGE_PROVIDER", "replicate")
 
 # Ollama / LLM (local)
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -52,6 +52,7 @@ GENERATED_FRAMES_DIR = "generated/frames"
 _extra_origins = os.getenv("CORS_ORIGINS", "")
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://192.168.31.12:8001",
     "https://cut-ai-nbx8.vercel.app",
 ]
 if _extra_origins:

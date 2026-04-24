@@ -10,6 +10,9 @@ import json
 from config import (
     LLM_PROVIDER,
     LLM_TEMPERATURE,
+    OLLAMA_BASE_URL,
+    LLM_MODEL,
+    LLM_NUM_CTX,
     GROQ_API_KEY,
     GROQ_MODEL,
 )
@@ -41,11 +44,24 @@ def clean_json_response(text: str) -> dict:
 # If you need local LLM, set LLM_PROVIDER=local and re-enable,
 # but this will load the GPU and risk PSU power spikes.
 
-def _chat_ollama(messages: list[dict], temperature: float | None = None) -> dict:
-    """Disabled — local LLM not available in cloud-only mode."""
-    raise RuntimeError(
-        "Local LLM disabled — use Groq. Set LLM_PROVIDER=groq in your environment."
+def _chat_ollama(messages: list[dict], temperature: float | None = None) -> str:
+    import httpx
+    resp = httpx.post(
+        f"{OLLAMA_BASE_URL}/api/chat",
+        json={
+            "model": LLM_MODEL,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": temperature if temperature is not None else LLM_TEMPERATURE,
+                "num_ctx": LLM_NUM_CTX,
+            },
+            "format": "json",
+        },
+        timeout=300.0,
     )
+    resp.raise_for_status()
+    return resp.json()["message"]["content"]
 
 
 # ---------------------------------------------------------------------------
