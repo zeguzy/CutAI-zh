@@ -1,8 +1,10 @@
 # :clapper: CutAI — AI 电影导演与分镜引擎
 
+> 👁️ **本项目是基于官方项目 [Swapnil-bo/CutAI](https://github.com/Swapnil-bo/CutAI) 的中文汉化版本，由 [zeguzy](https://github.com/zeguzy) 维护。包含前端 UI、后端 LLM 提示词、数据模型及 README 的全面汉化，并恢复了 Ollama 本地 LLM 支持。**
+
 **将任何创意转化为逐镜头分镜板，AI 驱动的场景分析、情绪评分和配乐氛围。**
 
-🌐 **[在线演示](https://cut-ai-nbx8.vercel.app)** | 📦 **[GitHub](https://github.com/Swapnil-bo/CutAI)**
+🌐 **[在线演示](https://cut-ai-nbx8.vercel.app)** | 📦 **[官方仓库](https://github.com/Swapnil-bo/CutAI)** | 📦 **[中文版本](https://github.com/zeguzy/CutAI)**
 
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
