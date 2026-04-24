@@ -52,3 +52,16 @@ app.include_router(storyboard.router)
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "CutAI"}
+
+# --- Serve frontend static files ---
+from fastapi.responses import FileResponse as _FR
+
+_frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'frontend', 'dist')
+if os.path.isdir(_frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(_frontend_dist, "assets")), name="fe_assets")
+    @app.get("/{full_path:path}")
+    async def _serve_fe(full_path: str):
+        fp = os.path.join(_frontend_dist, full_path)
+        if full_path and os.path.isfile(fp):
+            return _FR(fp)
+        return _FR(os.path.join(_frontend_dist, "index.html"))
