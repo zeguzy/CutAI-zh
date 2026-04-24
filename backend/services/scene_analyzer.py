@@ -14,95 +14,84 @@ from services.llm_client import chat_with_retry
 # ---------------------------------------------------------------------------
 
 SHOT_ANALYSIS_PROMPT = """\
-You are CutAI, an expert cinematographer. Given a scene description, break it \
-down into a professional shot-by-shot plan.
+你是 CutAI，一位资深摄影指导。根据场景描述，制定专业的逐镜头拍摄方案。
 
-Think like a real director:
-- Vary shot types to create visual rhythm (wide → medium → close-up, etc.)
-- Choose camera angles that serve the story's emotion
-- Pick camera movements that enhance the narrative tension
-- Write a vivid visual description for each shot
-- Include any dialogue that occurs during the shot
+请像真正的导演一样思考：
+- 变换镜头类型以创造视觉节奏（全景→中景→特写等）
+- 选择服务于故事情感的摄影角度
+- 选择能增强叙事张力的摄影机运动方式
+- 为每个镜头撰写生动的视觉描述
+- 包含该镜头中的对白内容
 
-shot_type must be one of: wide, close-up, medium, over-the-shoulder, POV, aerial, tracking
-camera_angle must be one of: eye-level, low-angle, high-angle, dutch-angle, bird's-eye
-camera_movement must be one of: static, pan-left, pan-right, tilt-up, tilt-down, dolly-in, dolly-out, crane
+shot_type 必须是以下之一：wide, close-up, medium, over-the-shoulder, POV, aerial, tracking
+camera_angle 必须是以下之一：eye-level, low-angle, high-angle, dutch-angle, bird's-eye
+camera_movement 必须是以下之一：static, pan-left, pan-right, tilt-up, tilt-down, dolly-in, dolly-out, crane
 
-Respond ONLY with valid JSON. No markdown, no explanation."""
+只返回合法 JSON，不要使用 markdown，不要解释。"""
 
 MOOD_SCORING_PROMPT = """\
-You are CutAI, an expert film analyst. Given a scene description, score its \
-mood on four dimensions. Think about the emotional undercurrent of the scene.
+你是 CutAI，一位资深电影分析专家。根据场景描述，从四个维度对其情绪进行评分。请深入思考场景的情感暗流。
 
-Return a JSON object with:
-- tension: float 0.0 (relaxed) to 1.0 (maximum tension)
-- emotion: float 0.0 (deeply sad) to 1.0 (joyful)
-- energy: float 0.0 (calm/still) to 1.0 (intense/chaotic)
-- darkness: float 0.0 (bright/lighthearted) to 1.0 (dark/grim)
-- overall_mood: a single word or short phrase (e.g. "melancholic", "thrilling", \
-"romantic", "eerie", "triumphant", "bittersweet", "ominous")
+返回一个 JSON 对象，包含：
+- tension: 浮点数，0.0（松弛）到 1.0（最大张力）
+- emotion: 浮点数，0.0（极度悲伤）到 1.0（欢快）
+- energy: 浮点数，0.0（平静/静止）到 1.0（激烈/混乱）
+- darkness: 浮点数，0.0（明亮/轻松）到 1.0（阴暗/沉重）
+- overall_mood: 一个词或短语（如「忧郁」「惊悚」「浪漫」「诡异」「壮烈」「苦甜参半」「不祥」）
 
-Respond ONLY with valid JSON. No markdown, no explanation."""
+只返回合法 JSON，不要使用 markdown，不要解释。"""
 
 SOUNDTRACK_PROMPT = """\
-You are CutAI, an expert film music supervisor. Given a scene description and \
-its mood profile, suggest a soundtrack vibe that enhances the atmosphere.
+你是 CutAI，一位资深电影配乐总监。根据场景描述及其情绪特征，建议能增强氛围的配乐风格。
 
-Return a JSON object with:
-- genre: music genre (e.g. "ambient electronic", "orchestral", "lo-fi", "jazz", \
-"synthwave", "post-rock", "classical piano")
-- tempo: "slow", "moderate", or "fast"
-- instruments: array of key instruments (e.g. ["piano", "strings", "synth pad"])
-- reference_track: a real reference in the form "Similar to: Artist - Track"
-- energy_level: float 0.0 (quiet/ambient) to 1.0 (driving/powerful)
+返回一个 JSON 对象，包含：
+- genre: 音乐类型（如「氛围电子」「管弦乐」「Lo-Fi」「爵士」「合成器浪潮」「后摇」「古典钢琴」）
+- tempo: "slow"、"moderate" 或 "fast"
+- instruments: 核心乐器数组（如 ["钢琴", "弦乐", "合成器pad", "鼓"]）
+- reference_track: 真实参考曲目，格式为「类似：艺术家 - 曲目」
+- energy_level: 浮点数，0.0（安静/氛围）到 1.0（强劲/震撼）
 
-Respond ONLY with valid JSON. No markdown, no explanation."""
+只返回合法 JSON，不要使用 markdown，不要解释。"""
 
 SD_PROMPT_SD15 = """\
-You are CutAI, an expert at writing image generation prompts optimized for \
-Stable Diffusion 1.5 (512x512).
+你是 CutAI，一位专精于 Stable Diffusion 1.5（512x512）图像生成提示词编写的专家。
 
-Given a list of shot descriptions, rewrite each shot's sd_prompt to be a \
-highly detailed visual prompt. Include:
-- Art style and medium (cinematic, film grain, 35mm photography, digital art)
-- Lighting (dramatic shadows, golden hour, neon glow, soft diffused light)
-- Color palette (warm amber tones, cold blue steel, muted pastels)
-- Composition cues (rule of thirds, centered, leading lines)
-- Atmosphere (smoke haze, rain, dust particles, fog)
+根据给定的镜头描述列表，将每个镜头的 sd_prompt 改写为高度详细的视觉提示词。包含：
+- 艺术风格与媒介（电影感、胶片颗粒、35mm摄影、数字艺术）
+- 光影效果（戏剧性阴影、黄金时刻、霓虹光晕、柔和漫射光）
+- 色彩方案（暖琥珀色调、冷蓝钢色、柔和粉彩）
+- 构图提示（三分法、居中、引导线）
+- 氛围元素（烟雾、雨、尘粒、雾）
 
-Use keyword-style prompts with quality boosters: "cinematic, 8k, masterpiece, \
-trending on artstation, highly detailed, photorealistic".
+使用关键词式提示词并加入质量增强词：「cinematic, 8k, masterpiece, trending on artstation, highly detailed, photorealistic」。
 
-Do NOT include character names — describe their appearance instead.
-Keep each prompt under 120 words for best SD 1.5 results.
+不要包含角色名称——改为描述其外貌特征。
+每个提示词控制在120词以内，以获得最佳 SD 1.5 效果。
 
-Return a JSON object: {"prompts": ["prompt1", "prompt2", ...]}
-Order must match the input shot order.
+返回 JSON 对象：{"prompts": ["prompt1", "prompt2", ...]}
+顺序必须与输入镜头顺序一致。
 
-Respond ONLY with valid JSON. No markdown, no explanation."""
+只返回合法 JSON，不要使用 markdown，不要解释。"""
 
 SD_PROMPT_SDXL = """\
-You are CutAI, an expert at writing image generation prompts optimized for \
-SDXL (1024x1024).
+你是 CutAI，一位专精于 SDXL（1024x1024）图像生成提示词编写的专家。
 
-Given a list of shot descriptions, rewrite each shot's sd_prompt to be a \
-detailed natural language description of the image to generate. Write in \
-flowing, descriptive sentences — NOT keyword lists.
+根据给定的镜头描述列表，将每个镜头的 sd_prompt 改写为流畅的、描述性语言形式的图像描述。请使用连贯的描述性句子——不要使用关键词列表。
 
-Describe in natural language:
-- What is happening in the scene and who is visible
-- The environment, setting, and time of day
-- Lighting quality and color mood
-- Camera perspective and framing
-- Artistic style (e.g. "a cinematic still from a neo-noir thriller")
+用自然语言描述：
+- 场景中正在发生什么，谁在画面中
+- 环境、场景设定和时间
+- 光影质感和色彩情绪
+- 摄影视角和构图
+- 艺术风格（如「一幅新黑色电影惊悚片的电影剧照」）
 
-Do NOT include character names — describe their appearance instead.
-Keep each prompt 1-3 sentences.
+不要包含角色名称——改为描述其外貌特征。
+每个提示词控制在1-3句话。
 
-Return a JSON object: {"prompts": ["prompt1", "prompt2", ...]}
-Order must match the input shot order.
+返回 JSON 对象：{"prompts": ["prompt1", "prompt2", ...]}
+顺序必须与输入镜头顺序一致。
 
-Respond ONLY with valid JSON. No markdown, no explanation."""
+只返回合法 JSON，不要使用 markdown，不要解释。"""
 
 
 def _get_sd_prompt_system() -> str:
@@ -132,15 +121,15 @@ def analyze_shots(
         {
             "role": "user",
             "content": (
-                f"Break this scene into detailed shots (aim for 3-5 shots).\n\n"
-                f"LOCATION: {location}\n"
-                f"TIME OF DAY: {time_of_day}\n"
-                f"CHARACTERS: {', '.join(characters) if characters else 'None'}\n\n"
-                f"SCENE DESCRIPTION:\n{scene_description}\n\n"
-                f"Return a JSON object: {{\"shots\": [...]}}\n"
-                f"Each shot must have: shot_number (starting at 1), shot_type, "
-                f"camera_angle, camera_movement, description, dialogue (string or null), "
-                f"duration_seconds (integer), sd_prompt (detailed visual prompt for SD 1.5)."
+                f"将以下场景拆分为详细的镜头（建议3-5个镜头）。\n\n"
+                f"地点：{location}\n"
+                f"时间：{time_of_day}\n"
+                f"角色：{', '.join(characters) if characters else '无'}\n\n"
+                f"场景描述：\n{scene_description}\n\n"
+                f"返回 JSON 对象：{{\"shots\": [...]}}\n"
+                f"每个镜头必须包含：shot_number（从1开始）、shot_type、"
+                f"camera_angle、camera_movement、description、dialogue（字符串或null）、"
+                f"duration_seconds（整数）、sd_prompt（为 SD 1.5 编写的详细视觉提示词）。"
             ),
         },
     ]
@@ -162,10 +151,10 @@ def score_mood(
         {
             "role": "user",
             "content": (
-                f"Score the mood of this scene.\n\n"
-                f"LOCATION: {location}\n"
-                f"TIME OF DAY: {time_of_day}\n\n"
-                f"SCENE DESCRIPTION:\n{scene_description}"
+                f"为以下场景进行情绪评分。\n\n"
+                f"地点：{location}\n"
+                f"时间：{time_of_day}\n\n"
+                f"场景描述：\n{scene_description}"
             ),
         },
     ]
@@ -183,14 +172,14 @@ def suggest_soundtrack(
         {
             "role": "user",
             "content": (
-                f"Suggest a soundtrack vibe for this scene.\n\n"
-                f"SCENE DESCRIPTION:\n{scene_description}\n\n"
-                f"MOOD PROFILE:\n"
-                f"- Tension: {mood.tension}\n"
-                f"- Emotion: {mood.emotion} (0=sad, 1=joyful)\n"
-                f"- Energy: {mood.energy}\n"
-                f"- Darkness: {mood.darkness}\n"
-                f"- Overall mood: {mood.overall_mood}"
+                f"为以下场景推荐配乐风格。\n\n"
+                f"场景描述：\n{scene_description}\n\n"
+                f"情绪特征：\n"
+                f"- 张力：{mood.tension}\n"
+                f"- 情感：{mood.emotion}（0=悲伤，1=欢快）\n"
+                f"- 能量：{mood.energy}\n"
+                f"- 明暗：{mood.darkness}\n"
+                f"- 整体情绪：{mood.overall_mood}"
             ),
         },
     ]
@@ -222,10 +211,10 @@ def generate_sd_prompts(shots: list[Shot]) -> list[Shot]:
         {
             "role": "user",
             "content": (
-                f"Rewrite and optimize the SD prompts for these {len(shots)} shots.\n\n"
-                f"SHOTS:\n{_format_shots_for_prompt(shot_descriptions)}\n\n"
-                f"Return: {{\"prompts\": [\"prompt1\", \"prompt2\", ...]}}\n"
-                f"You must return exactly {len(shots)} prompts in the same order."
+                f"为以下 {len(shots)} 个镜头改写并优化 SD 提示词。\n\n"
+                f"镜头列表：\n{_format_shots_for_prompt(shot_descriptions)}\n\n"
+                f"返回格式：{{\"prompts\": [\"prompt1\", \"prompt2\", ...]}}\n"
+                f"必须按相同顺序返回恰好 {len(shots)} 个提示词。"
             ),
         },
     ]
@@ -269,7 +258,7 @@ def _format_shots_for_prompt(shot_descriptions: list[dict]) -> str:
     lines = []
     for s in shot_descriptions:
         lines.append(
-            f"Shot {s['shot_number']} ({s['shot_type']}, {s['camera_angle']}): "
-            f"{s['description']}\n  Current SD prompt: {s['current_sd_prompt']}"
+            f"镜头 {s['shot_number']}（{s['shot_type']}，{s['camera_angle']}）："
+            f"{s['description']}\n  当前 SD 提示词：{s['current_sd_prompt']}"
         )
     return "\n".join(lines)

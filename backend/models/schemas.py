@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 class Shot(BaseModel):
     shot_number: int
-    shot_type: str          # "wide", "close-up", "medium", "over-the-shoulder", "POV", "aerial", "tracking"
-    camera_angle: str       # "eye-level", "low-angle", "high-angle", "dutch-angle", "bird's-eye"
-    camera_movement: str    # "static", "pan-left", "pan-right", "tilt-up", "tilt-down", "dolly-in", "dolly-out", "crane"
+    shot_type: str          # 镜头类型："wide"全景, "close-up"特写, "medium"中景, "over-the-shoulder"过肩, "POV"主观, "aerial"航拍, "tracking"跟踪
+    camera_angle: str       # 摄影角度："eye-level"平视, "low-angle"仰拍, "high-angle"俯拍, "dutch-angle"倾斜, "bird's-eye"鸟瞰
+    camera_movement: str    # 摄影机运动："static"静止, "pan-left"左摇, "pan-right"右摇, "tilt-up"仰俯, "tilt-down"俯仰, "dolly-in"推入, "dolly-out"拉出, "crane"摇臂
     description: str
     dialogue: str | None = None
     duration_seconds: int
@@ -15,26 +15,26 @@ class Shot(BaseModel):
 
 
 class MoodScore(BaseModel):
-    tension: float          # 0.0 - 1.0
-    emotion: float          # 0.0 (sad) - 1.0 (joyful)
-    energy: float           # 0.0 (calm) - 1.0 (intense)
-    darkness: float         # 0.0 (light) - 1.0 (dark)
-    overall_mood: str       # "melancholic", "thrilling", "romantic", "eerie", "triumphant", etc.
+    tension: float          # 张力：0.0 - 1.0
+    emotion: float          # 情感：0.0（悲伤）- 1.0（欢快）
+    energy: float           # 能量：0.0（平静）- 1.0（激烈）
+    darkness: float         # 明暗：0.0（明亮）- 1.0（阴暗）
+    overall_mood: str       # 整体情绪：「忧郁」「惊悚」「浪漫」「诡异」「壮烈」等
 
 
 class SoundtrackVibe(BaseModel):
-    genre: str              # "ambient electronic", "orchestral", "lo-fi", "jazz", "synthwave", etc.
-    tempo: str              # "slow", "moderate", "fast"
-    instruments: list[str]  # ["piano", "strings", "synth pad", "drums"]
-    reference_track: str    # "Similar to: Hans Zimmer - Time"
-    energy_level: float     # 0.0 - 1.0
+    genre: str              # 音乐类型：「氛围电子」「管弦乐」「Lo-Fi」「爵士」「合成器浪潮」等
+    tempo: str              # 节奏：「slow」慢、「moderate」中、「fast」快
+    instruments: list[str]  # 乐器列表，如 ["钢琴", "弦乐", "合成器pad", "鼓"]
+    reference_track: str    # 参考曲目，如「类似：Hans Zimmer - Time」
+    energy_level: float     # 能量等级：0.0 - 1.0
 
 
 class Scene(BaseModel):
     scene_number: int
     title: str
-    location: str           # "INT. COFFEE SHOP - NIGHT"
-    time_of_day: str        # "dawn", "morning", "afternoon", "evening", "night"
+    location: str           # 如「内景. 咖啡馆 - 夜」
+    time_of_day: str        # 「dawn」黎明、「morning」上午、「afternoon」下午、「evening」傍晚、「night」夜晚
     description: str
     characters: list[str]
     shots: list[Shot]
@@ -83,15 +83,15 @@ class GenerateRequest(BaseModel):
 
 
 class StoryboardGenerateRequest(BaseModel):
-    """Request for full storyboard generation.
+    """分镜生成请求。
 
-    Provide either script_text (parse existing) or genre + premise (AI generate).
+    提供 script_text（解析已有剧本）或 genre + premise（AI 生成）。
     """
     script_text: str | None = None
     genre: str | None = None
     premise: str | None = None
     num_scenes: int = 5
-    title: str = "Untitled Project"
+    title: str = "未命名项目"
 
 
 class ScriptUpdate(BaseModel):
@@ -110,25 +110,25 @@ class SceneUpdate(BaseModel):
 
 
 class SceneReorder(BaseModel):
-    """List of scene IDs in the desired order."""
+    """按指定顺序排列的场景 ID 列表。"""
     scene_ids: list[int]
 
 
 class SceneCreate(BaseModel):
-    """Create a new blank scene."""
-    title: str = "New Scene"
+    """创建一个新的空白场景。"""
+    title: str = "新场景"
     location: str | None = None
     time_of_day: str | None = None
     description: str | None = None
 
 
 class RegenerateFrameRequest(BaseModel):
-    """Request to regenerate a shot frame with an optional custom prompt."""
+    """重新生成镜头画面的请求，可附带自定义提示词。"""
     sd_prompt: str | None = None
 
 
 class ShotPromptUpdate(BaseModel):
-    """Update the SD prompt for a shot."""
+    """更新镜头的 SD 提示词。"""
     sd_prompt: str
 
 
