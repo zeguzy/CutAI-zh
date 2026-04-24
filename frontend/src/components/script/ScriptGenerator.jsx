@@ -31,7 +31,7 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-surface-700/60 bg-surface-850">
         <Sparkles className="w-3.5 h-3.5 text-accent-500" />
         <span className="text-xs font-medium text-surface-400 uppercase tracking-wider">
-          AI Script Generator
+          AI 剧本生成器
         </span>
       </div>
 
@@ -41,7 +41,7 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
           {/* Genre select */}
           <div className="flex-1">
             <label className="block text-[11px] font-medium text-surface-400 uppercase tracking-wider mb-1.5">
-              Genre
+              类型
             </label>
             <div className="relative">
               <select
@@ -69,7 +69,7 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
           {/* Num scenes */}
           <div className="w-28">
             <label className="block text-[11px] font-medium text-surface-400 uppercase tracking-wider mb-1.5">
-              Scenes
+              场景数
             </label>
             <div className="relative">
               <select
@@ -85,7 +85,7 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
                 "
               >
                 {[3, 4, 5, 6, 7].map((n) => (
-                  <option key={n} value={n}>{n} scenes</option>
+                  <option key={n} value={n}>{n} 个场景</option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-surface-400 pointer-events-none" />
@@ -96,14 +96,14 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
         {/* Premise */}
         <div>
           <label className="block text-[11px] font-medium text-surface-400 uppercase tracking-wider mb-1.5">
-            Premise
+            前提设定
           </label>
           <textarea
             value={premise}
             onChange={(e) => setPremise(e.target.value)}
             disabled={disabled}
             rows={3}
-            placeholder="A burnt-out detective receives a mysterious letter that reopens a cold case from 10 years ago..."
+            placeholder="一位精疲力竭的侦探收到一封神秘密信，重新开启了一桩十年前的悬案……"
             className="
               w-full bg-surface-750 border border-surface-600 rounded-lg
               px-3 py-2.5 text-sm text-zinc-200
@@ -128,7 +128,7 @@ export default function ScriptGenerator({ onGenerate, disabled }) {
           "
         >
           <Sparkles className="w-4 h-4" />
-          Generate Script
+          生成剧本
         </button>
       </div>
     </form>

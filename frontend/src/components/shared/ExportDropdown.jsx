@@ -40,11 +40,11 @@ export default function ExportDropdown({ projectId, projectTitle, genre, sceneCo
   async function handleShare() {
     setOpen(false)
     const summary = [
-      `🎬 ${projectTitle || 'Untitled'}`,
-      genre ? `Genre: ${genre}` : null,
-      sceneCount ? `${sceneCount} scenes` : null,
+      `🎬 ${projectTitle || '未命名项目'}`,
+      genre ? `类型：${genre}` : null,
+      sceneCount ? `${sceneCount} 个场景` : null,
       '',
-      'Built with CutAI — AI Film Director & Storyboard Engine',
+      '由 CutAI 生成 — AI 电影导演与分镜引擎',
     ]
       .filter(Boolean)
       .join('\n')
@@ -65,7 +65,7 @@ export default function ExportDropdown({ projectId, projectTitle, genre, sceneCo
         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-800 border border-surface-700 text-zinc-300 hover:text-accent-400 hover:border-accent-500/40 transition-all"
       >
         <Download className="w-3.5 h-3.5" />
-        Export
+        导出
       </button>
 
       {open && (
@@ -75,14 +75,14 @@ export default function ExportDropdown({ projectId, projectTitle, genre, sceneCo
             className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-xs text-zinc-300 hover:bg-surface-750 hover:text-accent-400 transition-colors"
           >
             <FileJson className="w-4 h-4 text-accent-500" />
-            Export as JSON
+            导出为 JSON
           </button>
           <button
             onClick={downloadPDF}
             className="flex items-center gap-2.5 w-full px-3.5 py-2.5 text-xs text-zinc-300 hover:bg-surface-750 hover:text-accent-400 transition-colors"
           >
             <FileText className="w-4 h-4 text-purple-400" />
-            Export as PDF
+            导出为 PDF
           </button>
           <div className="border-t border-surface-700" />
           <button
@@ -92,12 +92,12 @@ export default function ExportDropdown({ projectId, projectTitle, genre, sceneCo
             {copied ? (
               <>
                 <Check className="w-4 h-4 text-film-green" />
-                Copied to clipboard!
+                已复制到剪贴板！
               </>
             ) : (
               <>
                 <Share2 className="w-4 h-4 text-film-blue" />
-                Share Summary
+                分享摘要
               </>
             )}
           </button>

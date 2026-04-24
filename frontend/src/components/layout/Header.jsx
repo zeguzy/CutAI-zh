@@ -43,7 +43,7 @@ export default function Header() {
         <span className="text-[10px] font-mono text-surface-500 uppercase tracking-widest">
           v0.1
         </span>
-        <div className="w-2 h-2 rounded-full bg-film-green animate-pulse" title="Backend connected" />
+        <div className="w-2 h-2 rounded-full bg-film-green animate-pulse" title="后端已连接" />
       </div>
     </header>
   )

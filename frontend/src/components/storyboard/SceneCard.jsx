@@ -215,7 +215,7 @@ const SceneCard = forwardRef(function SceneCard(
       {isRegenerating && (
         <div className="absolute inset-0 bg-surface-900/70 backdrop-blur-sm z-30 flex flex-col items-center justify-center">
           <Loader2 className="w-6 h-6 text-accent-500 animate-spin mb-2" />
-          <span className="text-[10px] font-mono text-accent-400">Regenerating...</span>
+          <span className="text-[10px] font-mono text-accent-400">重新生成中...</span>
         </div>
       )}
 
@@ -253,7 +253,7 @@ const SceneCard = forwardRef(function SceneCard(
 
         {/* Scene description — elegant monospace */}
         <p className="text-[11px] font-mono text-zinc-300/90 leading-relaxed line-clamp-3 mb-2">
-          {description || 'No description'}
+          {description || '暂无描述'}
         </p>
 
         {/* Camera angle badge overlay */}
@@ -272,14 +272,14 @@ const SceneCard = forwardRef(function SceneCard(
             onClick={handleRegenerate}
             disabled={isRegenerating}
             className="w-6 h-6 rounded bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-accent-500/30 transition-colors"
-            title="Regenerate scene"
+            title="重新生成场景"
           >
             <RefreshCw className="w-3 h-3 text-zinc-300" />
           </button>
           <button
             onClick={handleDeleteClick}
             className="w-6 h-6 rounded bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-red-500/30 transition-colors"
-            title="Delete scene"
+            title="删除场景"
           >
             <Trash2 className="w-3 h-3 text-zinc-300" />
           </button>
@@ -319,7 +319,7 @@ const SceneCard = forwardRef(function SceneCard(
             <button
               onClick={handleEditStart}
               className="w-5 h-5 shrink-0 flex items-center justify-center text-surface-500 hover:text-accent-400 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Edit title"
+              title="编辑标题"
             >
               <Pencil className="w-3 h-3" />
             </button>
@@ -363,7 +363,7 @@ const SceneCard = forwardRef(function SceneCard(
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-surface-500">
-              {(scene.shots || []).length} shots
+              {(scene.shots || []).length} 个镜头
             </span>
             {totalDuration > 0 && (
               <span className="flex items-center gap-0.5 text-[10px] font-mono text-surface-500">

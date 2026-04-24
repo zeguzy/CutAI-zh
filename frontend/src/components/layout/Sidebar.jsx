@@ -9,10 +9,10 @@ import {
 import useUIStore from '../../stores/useUIStore'
 
 const NAV_ITEMS = [
-  { id: 'script', label: 'Script', icon: FileText },
-  { id: 'storyboard', label: 'Storyboard', icon: LayoutGrid },
-  { id: 'timeline', label: 'Timeline', icon: Clock },
-  { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+  { id: 'script', label: '剧本', icon: FileText },
+  { id: 'storyboard', label: '分镜板', icon: LayoutGrid },
+  { id: 'timeline', label: '时间线', icon: Clock },
+  { id: 'analysis', label: '分析', icon: BarChart3 },
 ]
 
 export default function Sidebar() {
@@ -28,7 +28,7 @@ export default function Sidebar() {
       <button
         onClick={() => navigate('/')}
         className="w-9 h-9 rounded-lg flex items-center justify-center text-surface-400 hover:text-zinc-200 hover:bg-surface-700 transition-all mb-4"
-        title="Projects"
+        title="项目列表"
       >
         <Home className="w-4.5 h-4.5" />
       </button>

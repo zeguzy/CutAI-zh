@@ -184,7 +184,7 @@ export default function ShotPanel({ scene, onClose }) {
             {isRegenerating && (
               <div className="absolute inset-0 bg-surface-900/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center">
                 <Loader2 className="w-8 h-8 text-accent-500 animate-spin mb-3" />
-                <span className="text-xs font-mono text-accent-400">Regenerating...</span>
+                <span className="text-xs font-mono text-accent-400">重新生成中...</span>
               </div>
             )}
 
@@ -196,7 +196,7 @@ export default function ShotPanel({ scene, onClose }) {
               <div className="bg-surface-800 px-5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <span className="text-[10px] font-mono font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded shrink-0">
-                    SCENE {scene.scene_number}
+                    场景 {scene.scene_number}
                   </span>
                   <h3 className="text-sm font-semibold text-zinc-100 truncate">
                     {scene.title}
@@ -245,7 +245,7 @@ export default function ShotPanel({ scene, onClose }) {
             <div className="flex-1 overflow-y-auto">
               {/* Scene description — editable */}
               <div className="px-5 pt-4 pb-2">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-surface-500 mb-2">Scene Description</div>
+                <div className="text-[10px] font-mono uppercase tracking-wider text-surface-500 mb-2">场景描述</div>
                 {editingDesc ? (
                   <div className="mb-3">
                     <textarea
@@ -260,13 +260,13 @@ export default function ShotPanel({ scene, onClose }) {
                         onClick={() => { setEditingDesc(false); setDescText(scene.description || '') }}
                         className="text-[10px] text-surface-400 hover:text-zinc-200"
                       >
-                        Cancel
+                        取消
                       </button>
                       <button
                         onClick={handleDescSave}
                         className="text-[10px] text-accent-400 hover:text-accent-300 font-semibold"
                       >
-                        Save
+                        保存
                       </button>
                     </div>
                   </div>
@@ -277,7 +277,7 @@ export default function ShotPanel({ scene, onClose }) {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-xs font-mono text-zinc-300 leading-relaxed flex-1 whitespace-pre-wrap">
-                        {scene.description || 'Click to add description...'}
+                        {scene.description || '点击添加描述...'}
                       </p>
                       <Pencil className="w-3 h-3 text-surface-500 group-hover/desc:text-accent-400 shrink-0 mt-0.5 transition-colors" />
                     </div>
@@ -294,16 +294,16 @@ export default function ShotPanel({ scene, onClose }) {
                   <div className="bg-surface-800/50 border border-surface-700/40 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-2.5">
                       <Activity className="w-3 h-3 text-surface-400" />
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">Mood</span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">情绪</span>
                       {mood.overall_mood && (
                         <span className="text-[9px] font-mono text-accent-400 ml-auto">{mood.overall_mood}</span>
                       )}
                     </div>
                     <div className="space-y-1.5">
-                      <MoodBar label="Tension" value={mood.tension} color="bg-red-500" />
-                      <MoodBar label="Emotion" value={mood.emotion} color="bg-blue-400" />
-                      <MoodBar label="Energy" value={mood.energy} color="bg-amber-400" />
-                      <MoodBar label="Dark" value={mood.darkness} color="bg-violet-500" />
+                      <MoodBar label="紧张感" value={mood.tension} color="bg-red-500" />
+                      <MoodBar label="情感" value={mood.emotion} color="bg-blue-400" />
+                      <MoodBar label="活力" value={mood.energy} color="bg-amber-400" />
+                      <MoodBar label="暗度" value={mood.darkness} color="bg-violet-500" />
                     </div>
                   </div>
 
@@ -311,17 +311,17 @@ export default function ShotPanel({ scene, onClose }) {
                   <div className="bg-surface-800/50 border border-surface-700/40 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-2.5">
                       <Music className="w-3 h-3 text-surface-400" />
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">Soundtrack</span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-surface-500">配乐</span>
                     </div>
                     <div className="space-y-1.5">
                       {soundtrack.genre && (
                         <div className="text-[10px] font-mono text-zinc-400">
-                          <span className="text-surface-500">Genre:</span> {soundtrack.genre}
+                          <span className="text-surface-500">类型：</span> {soundtrack.genre}
                         </div>
                       )}
                       {soundtrack.tempo && (
                         <div className="text-[10px] font-mono text-zinc-400">
-                          <span className="text-surface-500">Tempo:</span> {soundtrack.tempo}
+                          <span className="text-surface-500">节奏：</span> {soundtrack.tempo}
                         </div>
                       )}
                       {soundtrack.instruments && soundtrack.instruments.length > 0 && (
@@ -350,7 +350,7 @@ export default function ShotPanel({ scene, onClose }) {
                 <div className="flex items-center gap-2 mb-3">
                   <Camera className="w-3.5 h-3.5 text-surface-400" />
                   <span className="text-[10px] font-mono font-medium text-surface-400 uppercase tracking-wider">
-                    Shot Breakdown — {shots.length} Shot{shots.length !== 1 ? 's' : ''}
+                    镜头拆解 — {shots.length} 个镜头
                   </span>
                 </div>
 

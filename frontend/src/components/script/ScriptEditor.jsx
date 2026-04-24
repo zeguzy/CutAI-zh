@@ -21,7 +21,7 @@ export default function ScriptEditor({ value, onChange, disabled }) {
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-surface-400" />
             <span className="text-xs font-medium text-surface-400 uppercase tracking-wider">
-              Screenplay
+              剧本
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -33,7 +33,7 @@ export default function ScriptEditor({ value, onChange, disabled }) {
             </div>
             {value && (
               <span className="text-[10px] font-mono text-surface-500">
-                {value.split('\n').length} lines
+                {value.split('\n').length} 行
               </span>
             )}
           </div>
@@ -61,19 +61,19 @@ export default function ScriptEditor({ value, onChange, disabled }) {
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             spellCheck={false}
-            placeholder={`INT. COFFEE SHOP - NIGHT
+            placeholder={`内景. 咖啡馆 - 夜
 
-A dimly lit corner booth. Rain streaks down the window.
+昏暗灯光下的角落卡座。雨水顺着窗户滑落。
 
-DETECTIVE COLE sits alone, nursing a cold cup of coffee.
-A MANILA ENVELOPE sits unopened on the table.
+科尔警探独自坐着，搅动着一杯已经凉透的咖啡。
+桌上一只牛皮纸信封尚未拆封。
 
-                    COLE
-          (muttering)
-    Three years. Three years and it
-    comes down to this.
+                    科尔
+          （喃喃自语）
+    三年了。三年了，到头来
+    就剩这个。
 
-He reaches for the envelope...`}
+他伸手拿向信封……`}
             className="
               w-full min-h-[400px] bg-transparent text-zinc-300
               font-mono text-[13px] leading-[1.7rem]
@@ -90,7 +90,7 @@ He reaches for the envelope...`}
 
       {/* Hint text */}
       <p className="mt-2 text-[11px] text-surface-500 px-1">
-        Write in standard screenplay format. INT/EXT sluglines, character names in CAPS, dialogue indented.
+        请使用标准剧本格式：内景/外景场景标题行，角色名大写，对白缩进。
       </p>
     </div>
   )

@@ -13,10 +13,10 @@ import CameraBreakdown from '../components/analysis/CameraBreakdown'
 import ExportDropdown from '../components/shared/ExportDropdown'
 
 const TABS = {
-  script: { label: 'Script', icon: FileText },
-  storyboard: { label: 'Storyboard', icon: LayoutGrid },
-  timeline: { label: 'Timeline', icon: Clock },
-  analysis: { label: 'Analysis', icon: BarChart3 },
+  script: { label: '剧本', icon: FileText },
+  storyboard: { label: '分镜板', icon: LayoutGrid },
+  timeline: { label: '时间线', icon: Clock },
+  analysis: { label: '分析', icon: BarChart3 },
 }
 
 export default function ProjectPage() {
@@ -39,7 +39,7 @@ export default function ProjectPage() {
       genre,
       premise,
       num_scenes: numScenes,
-      title: currentProject?.title || 'Untitled Project',
+      title: currentProject?.title || '未命名项目',
     })
   }
 
@@ -47,7 +47,7 @@ export default function ProjectPage() {
     if (!scriptText.trim()) return
     startGeneration({
       script_text: scriptText.trim(),
-      title: currentProject?.title || 'Untitled Project',
+      title: currentProject?.title || '未命名项目',
     })
   }
 
@@ -90,7 +90,7 @@ export default function ProjectPage() {
                     : 'text-surface-400 hover:text-zinc-300'
                 }`}
               >
-                Write Script
+                撰写剧本
               </button>
               <button
                 onClick={() => setScriptMode('generate')}
@@ -100,7 +100,7 @@ export default function ProjectPage() {
                     : 'text-surface-400 hover:text-zinc-300'
                 }`}
               >
-                AI Generate
+                AI 生成
               </button>
             </div>
 
@@ -125,7 +125,7 @@ export default function ProjectPage() {
                     "
                   >
                     <LayoutGrid className="w-4 h-4" />
-                    Generate Storyboard from Script
+                    从剧本生成分镜板
                   </button>
                 )}
               </>
@@ -154,7 +154,7 @@ export default function ProjectPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 rounded-full bg-film-green" />
                   <span className="text-sm font-semibold text-zinc-200">
-                    Storyboard Ready
+                    分镜板已就绪
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
@@ -163,7 +163,7 @@ export default function ProjectPage() {
                       {genResult.num_scenes}
                     </div>
                     <div className="text-[10px] text-surface-400 uppercase tracking-wider">
-                      Scenes
+                      场景
                     </div>
                   </div>
                   <div className="bg-surface-750 rounded-lg p-3">
@@ -171,7 +171,7 @@ export default function ProjectPage() {
                       {genResult.total_frames}
                     </div>
                     <div className="text-[10px] text-surface-400 uppercase tracking-wider">
-                      Frames
+                      帧
                     </div>
                   </div>
                   <div className="bg-surface-750 rounded-lg p-3">
@@ -179,7 +179,7 @@ export default function ProjectPage() {
                       {genResult.genre}
                     </div>
                     <div className="text-[10px] text-surface-400 uppercase tracking-wider">
-                      Genre
+                      类型
                     </div>
                   </div>
                 </div>

@@ -87,8 +87,8 @@ export default function HomePage() {
           </h1>
         </div>
         <p className="text-zinc-500 text-sm max-w-md">
-          AI-powered storyboard engine. Write a script or describe a premise,
-          and watch your film come to life shot by shot.
+          AI 驱动的分镜引擎。撰写剧本或描述创意，
+          逐镜头呈现你的电影画面。
         </p>
       </motion.div>
 
@@ -102,7 +102,7 @@ export default function HomePage() {
           className="flex items-center gap-2 px-5 py-2.5 bg-accent-500 hover:bg-accent-400 text-surface-900 font-semibold text-sm rounded-lg transition-colors shadow-lg shadow-accent-500/20 mb-10"
         >
           <Plus className="w-4 h-4" />
-          New Project
+          新建项目
         </motion.button>
       )}
 
@@ -126,7 +126,7 @@ export default function HomePage() {
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-800 border border-surface-600 rounded-xl p-6 w-full max-w-md z-[51] shadow-2xl"
             >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-semibold text-zinc-200">New Project</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">新建项目</h3>
                 <button
                   type="button"
                   onClick={() => setShowNew(false)}
@@ -136,22 +136,22 @@ export default function HomePage() {
                 </button>
               </div>
               <label className="block mb-1 text-[11px] text-surface-400 uppercase tracking-wider font-medium">
-                Title
+                标题
               </label>
               <input
                 autoFocus
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="My Film Project..."
+                placeholder="我的电影项目..."
                 className="w-full bg-surface-750 border border-surface-600 rounded-lg px-3 py-2.5 text-sm text-zinc-200 placeholder-surface-500 focus:outline-none focus:border-accent-500/50 mb-4"
               />
               <label className="block mb-1 text-[11px] text-surface-400 uppercase tracking-wider font-medium">
-                Genre
+                类型
               </label>
               <input
                 value={newGenre}
                 onChange={(e) => setNewGenre(e.target.value)}
-                placeholder="Noir, Sci-Fi, Drama... (optional)"
+                placeholder="黑色电影、科幻、剧情...（可选）"
                 className="w-full bg-surface-750 border border-surface-600 rounded-lg px-3 py-2.5 text-sm text-zinc-200 placeholder-surface-500 focus:outline-none focus:border-accent-500/50 mb-5"
               />
               <div className="flex gap-2 justify-end">
@@ -160,13 +160,13 @@ export default function HomePage() {
                   onClick={() => setShowNew(false)}
                   className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
                 >
-                  Cancel
+                  取消
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-accent-500 hover:bg-accent-400 text-surface-900 font-semibold text-sm rounded-lg transition-colors shadow-lg shadow-accent-500/15"
                 >
-                  Create Project
+                  创建项目
                 </button>
               </div>
             </motion.form>
@@ -177,12 +177,12 @@ export default function HomePage() {
       {/* Projects grid */}
       {loading ? (
         <div className="text-surface-500 text-sm font-mono animate-pulse">
-          Loading projects...
+          加载项目中...
         </div>
       ) : projects.length === 0 && !showNew ? (
         <div className="text-center text-surface-500 mt-4">
           <Folder className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No projects yet. Create one to get started.</p>
+          <p className="text-sm">暂无项目，点击上方按钮创建一个吧。</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full max-w-4xl">
@@ -209,7 +209,7 @@ export default function HomePage() {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center">
                       <Film className="w-8 h-8 text-surface-700 mb-1" />
-                      <span className="text-[10px] text-surface-600 font-mono">No frames</span>
+                      <span className="text-[10px] text-surface-600 font-mono">暂无镜头</span>
                     </div>
                   )}
 
@@ -218,14 +218,14 @@ export default function HomePage() {
                     <button
                       onClick={(e) => handleDuplicate(project.id, e)}
                       className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-accent-400 hover:bg-black/70 transition-all"
-                      title="Duplicate project"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteClick(project.id, e)}
-                      className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-red-400 hover:bg-black/70 transition-all"
-                      title="Delete project"
+                       title="复制项目"
+                     >
+                       <Copy className="w-3.5 h-3.5" />
+                     </button>
+                     <button
+                       onClick={(e) => handleDeleteClick(project.id, e)}
+                       className="w-7 h-7 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center text-zinc-300 hover:text-red-400 hover:bg-black/70 transition-all"
+                       title="删除项目"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -236,7 +236,7 @@ export default function HomePage() {
                     <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm">
                       <LayoutGrid className="w-2.5 h-2.5 text-zinc-400" />
                       <span className="text-[10px] font-mono text-zinc-300">
-                        {project.scene_count} scene{project.scene_count !== 1 ? 's' : ''}
+                        {project.scene_count} 个场景
                       </span>
                     </div>
                   )}
@@ -289,25 +289,25 @@ export default function HomePage() {
                   <AlertTriangle className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-200">Delete Project</h3>
-                  <p className="text-xs text-surface-400">This cannot be undone.</p>
+                  <h3 className="text-sm font-semibold text-zinc-200">删除项目</h3>
+                  <p className="text-xs text-surface-400">此操作不可撤销。</p>
                 </div>
               </div>
               <p className="text-xs text-zinc-400 mb-5">
-                This will permanently delete the project and all its scripts, scenes, and shots.
+                此操作将永久删除该项目及其所有剧本、场景和镜头。
               </p>
               <div className="flex gap-2 justify-end">
                 <button
                   onClick={() => setDeleteTarget(null)}
                   className="px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
                 >
-                  Cancel
+                  取消
                 </button>
                 <button
                   onClick={handleDeleteConfirm}
                   className="px-4 py-1.5 bg-red-500/80 hover:bg-red-500 text-white text-xs font-semibold rounded-lg transition-colors"
                 >
-                  Delete
+                  删除
                 </button>
               </div>
             </motion.div>

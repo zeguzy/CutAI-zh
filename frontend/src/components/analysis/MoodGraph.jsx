@@ -12,10 +12,10 @@ import { BarChart3 } from 'lucide-react'
 import useStoryboardStore from '../../stores/useStoryboardStore'
 
 const MOOD_LINES = [
-  { key: 'tension',  color: '#ef4444', label: 'Tension' },
-  { key: 'emotion',  color: '#fbbf24', label: 'Emotion' },
-  { key: 'energy',   color: '#10b981', label: 'Energy' },
-  { key: 'darkness', color: '#8b5cf6', label: 'Darkness' },
+  { key: 'tension',  color: '#ef4444', label: '紧张感' },
+  { key: 'emotion',  color: '#fbbf24', label: '情感' },
+  { key: 'energy',   color: '#10b981', label: '活力' },
+  { key: 'darkness', color: '#8b5cf6', label: '暗度' },
 ]
 
 function CustomTooltip({ active, payload, label }) {
@@ -57,9 +57,9 @@ export default function MoodGraph() {
         <div className="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-3">
           <BarChart3 className="w-7 h-7 text-surface-600" />
         </div>
-        <h3 className="text-sm font-semibold text-zinc-300 mb-1">No mood data</h3>
+        <h3 className="text-sm font-semibold text-zinc-300 mb-1">暂无情绪数据</h3>
         <p className="text-xs text-surface-500 text-center max-w-xs">
-          Generate a storyboard to see mood analysis across scenes.
+          生成分镜板后，即可查看各场景的情绪分析。
         </p>
       </div>
     )
@@ -69,7 +69,7 @@ export default function MoodGraph() {
     <div className="bg-surface-800 border border-surface-700 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-4 h-4 text-accent-500" />
-        <h3 className="text-sm font-semibold text-zinc-200">Mood Arc</h3>
+        <h3 className="text-sm font-semibold text-zinc-200">情绪曲线</h3>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>

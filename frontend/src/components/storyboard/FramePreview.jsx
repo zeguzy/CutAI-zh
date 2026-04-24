@@ -11,7 +11,7 @@ export default function FramePreview({ framePath, alt }) {
       <div className="aspect-video bg-surface-850 rounded-lg border border-surface-700/50 flex flex-col items-center justify-center">
         <Image className="w-10 h-10 text-surface-600 mb-2" />
         <span className="text-[11px] font-mono text-surface-600">
-          Frame not generated
+          画面未生成
         </span>
       </div>
     )
@@ -21,7 +21,7 @@ export default function FramePreview({ framePath, alt }) {
     <div className="aspect-video bg-surface-850 rounded-lg border border-surface-700/50 overflow-hidden">
       <img
         src={url}
-        alt={alt || 'Storyboard frame'}
+        alt={alt || '分镜画面'}
         className="w-full h-full object-cover"
       />
     </div>

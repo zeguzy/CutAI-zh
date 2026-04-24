@@ -78,9 +78,9 @@ export default function VisualTimeline() {
         <div className="w-16 h-16 rounded-2xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-4">
           <Clock className="w-8 h-8 text-surface-600" />
         </div>
-        <h3 className="text-sm font-semibold text-zinc-300 mb-1">No timeline yet</h3>
+        <h3 className="text-sm font-semibold text-zinc-300 mb-1">暂无时间线</h3>
         <p className="text-xs text-surface-500 text-center max-w-xs">
-          Generate a storyboard first. The visual timeline will appear here showing your scenes in sequence.
+          请先生成分镜板。可视化时间线将在此处按顺序展示各个场景。
         </p>
       </div>
     )

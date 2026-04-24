@@ -10,13 +10,13 @@ import {
 } from 'lucide-react'
 
 const STAGE_CONFIG = {
-  script:           { icon: FileText,    label: 'Script',      color: 'text-film-blue' },
-  parsing:          { icon: Search,      label: 'Parsing',     color: 'text-film-blue' },
-  analyzing:        { icon: Brain,       label: 'Analyzing',   color: 'text-accent-500' },
-  transition:       { icon: Loader2,     label: 'Switching',   color: 'text-surface-400' },
-  loading_sd:       { icon: Image,       label: 'Loading SD',  color: 'text-purple-400' },
-  generating_frames:{ icon: Image,       label: 'Generating',  color: 'text-purple-400' },
-  unloading_sd:     { icon: Loader2,     label: 'Cleanup',     color: 'text-surface-400' },
+  script:           { icon: FileText,    label: '剧本生成',     color: 'text-film-blue' },
+  parsing:          { icon: Search,      label: '解析中',       color: 'text-film-blue' },
+  analyzing:        { icon: Brain,       label: '分析中',       color: 'text-accent-500' },
+  transition:       { icon: Loader2,     label: '切换中',       color: 'text-surface-400' },
+  loading_sd:       { icon: Image,       label: '加载SD',       color: 'text-purple-400' },
+  generating_frames:{ icon: Image,       label: '生成中',       color: 'text-purple-400' },
+  unloading_sd:     { icon: Loader2,     label: '清理中',       color: 'text-surface-400' },
 }
 
 export default function GenerationProgress({ events, isRunning, error }) {
@@ -38,7 +38,7 @@ export default function GenerationProgress({ events, isRunning, error }) {
           <CheckCircle2 className="w-3.5 h-3.5 text-film-green" />
         )}
         <span className="text-xs font-medium text-surface-400 uppercase tracking-wider">
-          {isRunning ? 'Generating Storyboard' : error ? 'Generation Failed' : 'Generation Complete'}
+          {isRunning ? '正在生成分镜' : error ? '生成失败' : '生成完成'}
         </span>
         {isRunning && (
           <span className="ml-auto text-xs font-mono text-accent-400">

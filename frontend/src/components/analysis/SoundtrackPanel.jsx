@@ -44,9 +44,9 @@ export default function SoundtrackPanel() {
         <div className="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-3">
           <Music className="w-7 h-7 text-surface-600" />
         </div>
-        <h3 className="text-sm font-semibold text-zinc-300 mb-1">No soundtrack data</h3>
+        <h3 className="text-sm font-semibold text-zinc-300 mb-1">暂无配乐数据</h3>
         <p className="text-xs text-surface-500 text-center max-w-xs">
-          Generate a storyboard to see soundtrack suggestions per scene.
+          生成分镜板后，即可查看每个场景的配乐建议。
         </p>
       </div>
     )
@@ -56,7 +56,7 @@ export default function SoundtrackPanel() {
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-1">
         <Music className="w-4 h-4 text-accent-500" />
-        <h3 className="text-sm font-semibold text-zinc-200">Soundtrack Vibes</h3>
+        <h3 className="text-sm font-semibold text-zinc-200">配乐氛围</h3>
       </div>
 
       {scenesWithSoundtrack.map((scene) => {
@@ -77,7 +77,7 @@ export default function SoundtrackPanel() {
               {/* Scene label + genre */}
               <div className="flex items-center gap-2 mb-2.5">
                 <span className="text-[10px] font-mono font-bold text-accent-500 bg-accent-500/10 px-1.5 py-0.5 rounded">
-                  Scene {scene.scene_number}
+                  场景 {scene.scene_number}
                 </span>
                 <span className="text-xs font-medium text-zinc-300">
                   {st.genre}

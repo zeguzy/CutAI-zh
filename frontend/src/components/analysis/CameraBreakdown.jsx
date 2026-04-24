@@ -14,9 +14,9 @@ export default function CameraBreakdown() {
         <div className="w-14 h-14 rounded-2xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-3">
           <Camera className="w-7 h-7 text-surface-600" />
         </div>
-        <h3 className="text-sm font-semibold text-zinc-300 mb-1">No shot data</h3>
+        <h3 className="text-sm font-semibold text-zinc-300 mb-1">暂无镜头数据</h3>
         <p className="text-xs text-surface-500 text-center max-w-xs">
-          Generate a storyboard to see camera angle breakdown.
+          生成分镜板后，即可查看机位分析。
         </p>
       </div>
     )
@@ -44,16 +44,16 @@ export default function CameraBreakdown() {
     <div className="bg-surface-800 border border-surface-700 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <Video className="w-4 h-4 text-accent-500" />
-        <h3 className="text-sm font-semibold text-zinc-200">Camera Breakdown</h3>
+        <h3 className="text-sm font-semibold text-zinc-200">镜头分析</h3>
         <span className="text-[10px] font-mono text-surface-400 ml-auto">
-          {allShots.length} total shots
+          共 {allShots.length} 个镜头
         </span>
       </div>
 
       {/* Shot types */}
       <div className="mb-4">
         <h4 className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-2">
-          Shot Types
+          镜头类型
         </h4>
         <div className="flex flex-wrap gap-2">
           {sortedTypes.map(([type, count]) => (
@@ -68,7 +68,7 @@ export default function CameraBreakdown() {
       {/* Camera angles */}
       <div className="mb-4">
         <h4 className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-2">
-          Angles
+          角度
         </h4>
         <div className="flex flex-wrap gap-2">
           {sortedAngles.map(([angle, count]) => (
@@ -85,7 +85,7 @@ export default function CameraBreakdown() {
       {/* Camera movements */}
       <div>
         <h4 className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-2">
-          Movements
+          运动方式
         </h4>
         <div className="flex flex-wrap gap-2">
           {sortedMovements.map(([movement, count]) => (
